@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>NoobToRoot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;0,800;1,400&family=VT323&display=swap">
+<style>
+/* Layout : un seul terminal, colonne de 46rem, une seule taille de typo ; la hiérarchie passe par le gras, l'italique et la couleur. */
+:root {
+  color-scheme: dark;
+  --bg: #050607;
+  --panel: #0b0d0f;
+  --line: #1c2126;
+  --fg: #eceff1;
+  --dim: #7d8890;
+  --faint: #3a434a;
+  --noob: #39ff7a;
+  --geek: #ffd43b;
+  --elite: #ff3ea5;
+  --lvl: var(--noob);
+  --ok: #39ff7a;
+  --ko: #ff4d5e;
+  /* coloration syntaxique */
+  --sx-cmd: #5ce1ff;
+  --sx-flag: #c792ea;
+  --sx-str: #a5e86b;
+  --sx-num: #ff9e64;
+  --sx-op: #ff3ea5;
+  --sx-kw: #ff79c6;
+  --sx-fn: #5ce1ff;
+  --sx-tag: #5ce1ff;
+  --sx-attr: #ffd43b;
+  --sx-com: #5c6770;
+  --mono: "JetBrains Mono", "Fira Code", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  --display: "VT323", "JetBrains Mono", "DejaVu Sans Mono", monospace;
+  --size: 15px;
+}
+body[data-level="geek"] { --lvl: var(--geek); }
+body[data-level="elite"] { --lvl: var(--elite); }
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: var(--size);
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 24px 40px;
+  box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: inherit; font-size: inherit; }
+h1, h2, h3, p, pre { margin: 0; font-weight: inherit; }
+body::after { /* scanlines discrètes */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 10;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,.022) 0 1px, transparent 1px 3px);
+}
+/* l'écran dans l'écran : un cadre blanc autour de toute l'interface */
+.wrap {
+  max-width: 58rem; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;
+  border: 1px solid var(--fg); padding: 28px 32px 32px;
+  min-height: var(--frame-h, 0px); /* mesurée sur un écran de question Noob, appliquée à tous les écrans */
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 5px var(--faint);
+}
+@media (max-width: 480px) { .wrap { padding: 18px 14px 22px; } }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+:focus-visible { outline: 1px dashed var(--lvl); outline-offset: 3px; }
+::selection { background: var(--lvl); color: var(--bg); }
+em, i { font-style: italic; }
+b, strong { font-weight: 700; }
+
+/* ─── Accueil ─── */
+.boot { color: var(--dim); display: flex; flex-direction: column; min-height: 4.8em; }
+.boot .okk { color: var(--ok); }
+.title { margin: 0; }
+.title button {
+  font-family: var(--display); font-size: clamp(44px, 12vw, 64px); line-height: 1; font-weight: 400;
+  color: var(--lvl); white-space: nowrap; min-height: 1em; text-align: left;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--lvl) 40%, transparent);
+}
+.title .tn { color: var(--noob); text-shadow: 0 0 14px color-mix(in srgb, var(--noob) 40%, transparent); }
+.title .tg { color: var(--geek); text-shadow: 0 0 14px color-mix(in srgb, var(--geek) 40%, transparent); }
+.title .te { color: var(--elite); text-shadow: 0 0 14px color-mix(in srgb, var(--elite) 40%, transparent); }
+.cursor { display: inline-block; color: var(--lvl); font-weight: 700; margin-left: .04em; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.tagline { color: var(--dim); }
+.tagline b { color: var(--fg); }
+
+/* le bloc de choix occupe tout le bas du cadre : ./start se cale dans le coin inférieur droit */
+.setup { display: flex; flex-direction: column; gap: 16px; border-top: 1px solid var(--line); padding-top: 32px; margin-top: 16px; flex: 1; }
+.group { display: flex; flex-direction: column; gap: 2px; }
+.row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.label { color: var(--fg); font-weight: 700; }
+.label::before { content: "$ "; color: var(--lvl); }
+.opts { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.opt { color: var(--dim); padding: 0 4px; }
+.opt::before { content: "["; }
+.opt::after { content: "]"; }
+.opt:hover { color: var(--fg); }
+.opt[aria-pressed="true"] { color: var(--bg); background: var(--c, var(--lvl)); font-weight: 700; }
+.opt[data-v="noob"] { --c: var(--noob); }
+.opt[data-v="geek"] { --c: var(--geek); }
+.opt[data-v="elite"] { --c: var(--elite); }
+.desc { color: var(--dim); font-style: italic; font-size: .85em; min-height: 1.6em; } /* place réservée : rien ne bouge quand la description apparaît */
+@media (max-width: 940px) { .desc { min-height: 3.2em; } } /* sur écran étroit, place pour 2 lignes */
+.desc b { color: var(--lvl); font-weight: 700; }
+.go { align-self: flex-end; margin-top: auto; color: var(--lvl); font-weight: 800; }
+.go[aria-hidden="true"] { visibility: hidden; } /* place gardée : rien ne saute quand le bouton apparaît */
+.go::before { content: "> "; }
+.go:hover { text-decoration: underline; text-underline-offset: 4px; }
+.go[aria-disabled="true"] { color: var(--faint); }
+.go[aria-disabled="true"]:hover { text-decoration: none; }
+.missing { color: var(--dim); font-style: italic; font-size: .85em; }
+.best { color: var(--dim); }
+.best b { color: var(--fg); }
+
+/* ─── Partie ─── */
+.hud { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 4px 16px; color: var(--dim); }
+.hud .brand { color: var(--lvl); font-weight: 800; }
+.hud-r { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.hud-line { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 16px; }
+.best-var { color: var(--dim); }
+.best-var b { color: var(--fg); }
+.clock b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.clock.low, .clock.low b { color: var(--ko); }
+.clock.low b { animation: blink 1s steps(1) infinite; }
+.brand:hover, .title button:hover span:not(.cursor) { text-decoration: underline; text-underline-offset: 4px; }
+.badge { color: var(--lvl); font-weight: 800; }
+.badge::before { content: "["; color: var(--faint); }
+.badge::after { content: "]"; color: var(--faint); }
+.hud .sc b { color: var(--fg); }
+.bar { letter-spacing: .1em; color: var(--faint); overflow: hidden; white-space: nowrap; }
+.bar .on { color: var(--lvl); }
+.bar .ok { color: var(--ok); }
+.bar .ko { color: var(--ko); }
+
+.qblock { display: flex; flex-direction: column; gap: 2px; }
+.q-text { font-weight: 800; text-wrap: balance; }
+.q-text::before { content: "> "; color: var(--lvl); }
+.hint { color: var(--geek); font-style: italic; }
+.hint::before { content: "// indice : "; color: color-mix(in srgb, var(--geek) 55%, var(--bg)); }
+
+/* zone entre la question et le terminal : même hauteur à tous les niveaux,
+   pour que le terminal tombe au même endroit. Noob : propositions à gauche, correction à droite. */
+.zone { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 14px 32px; min-height: 9.6em; }
+.zone.split { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+@media (max-width: 640px) { .zone.split { grid-template-columns: minmax(0, 1fr); } }
+.fbcol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fbcol:empty { display: none; }
+.choices { display: flex; flex-direction: column; gap: 2px; }
+.choices .cap { color: var(--sx-com); font-style: italic; }
+.choice { display: flex; gap: 12px; align-items: baseline; padding: 2px 0; }
+.choice .k { color: var(--faint); font-weight: 700; }
+.choice code { min-width: 0; overflow-wrap: anywhere; }
+.choice.right .k { color: var(--ok); }
+.choice.right::after { content: "← bonne réponse"; color: var(--ok); font-style: italic; }
+.choice.wrong .k { color: var(--ko); }
+.choice.wrong::after { content: "← ta réponse"; color: var(--ko); font-style: italic; }
+
+.term {
+  border: 1px solid color-mix(in srgb, var(--lvl) 45%, var(--line));
+  background: #0d1012; border-radius: 6px; overflow: hidden;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lvl) 6%, transparent), 0 10px 30px rgba(0,0,0,.5);
+  transition: border-color .2s, box-shadow .2s;
+}
+.term:focus-within {
+  border-color: var(--lvl);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lvl) 12%, transparent), 0 0 28px color-mix(in srgb, var(--lvl) 18%, transparent);
+}
+.term-head {
+  display: flex; gap: 6px; align-items: center; padding: 6px 12px;
+  background: color-mix(in srgb, var(--lvl) 9%, #0d1012);
+  border-bottom: 1px solid color-mix(in srgb, var(--lvl) 30%, var(--line)); color: var(--dim);
+}
+.term-head i { width: 10px; height: 10px; border-radius: 50%; background: var(--faint); }
+.term-head i:first-child { background: var(--ko); }
+.term-head i:nth-child(2) { background: var(--geek); }
+.term-head i:nth-child(3) { background: var(--ok); }
+.term-head span { margin-left: 8px; color: var(--fg); font-weight: 700; }
+.cmdline { display: flex; align-items: baseline; gap: 10px; padding: 16px 16px 12px; }
+.prompt { color: var(--lvl); font-weight: 700; white-space: nowrap; }
+.field { position: relative; flex: 1; min-width: 0; }
+.field input, .field .mirror {
+  font: inherit; line-height: 1.6; letter-spacing: 0;
+  margin: 0; padding: 0; border: 0; width: 100%; white-space: pre;
+}
+.field input {
+  position: relative; z-index: 1; background: transparent; color: transparent;
+  caret-color: var(--lvl); outline: none;
+}
+.field input::placeholder { color: var(--faint); font-style: italic; }
+.field .mirror { position: absolute; inset: 0; overflow: hidden; color: var(--fg); pointer-events: none; }
+.term-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 0 14px 8px; color: var(--faint); font-style: italic; }
+.term-foot button { color: var(--dim); font-style: normal; }
+.term-foot button:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+
+.fb { border-left: 2px solid var(--ok); padding: 2px 0 2px 14px; display: flex; flex-direction: column; gap: 4px; }
+.fb.ko { border-color: var(--ko); }
+.fb .verdict { font-weight: 800; color: var(--ok); }
+.fb.ko .verdict { color: var(--ko); }
+.fb .expl { color: #c3cbd1; }
+.next { align-self: flex-start; color: var(--lvl); font-weight: 700; }
+.next:hover { text-decoration: underline; text-underline-offset: 4px; }
+.next span { color: var(--faint); font-weight: 400; }
+
+code { font-family: var(--mono); }
+.expl code, .expect code { background: #000; padding: 0 5px; border: 1px solid var(--line); }
+.t-cmd { color: var(--sx-cmd); font-weight: 700; }
+.t-flag { color: var(--sx-flag); }
+.t-str { color: var(--sx-str); }
+.t-num { color: var(--sx-num); }
+.t-op { color: var(--sx-op); font-weight: 700; }
+.t-kw { color: var(--sx-kw); font-weight: 700; }
+.t-fn { color: var(--sx-fn); }
+.t-tag { color: var(--sx-tag); }
+.t-attr { color: var(--sx-attr); }
+.t-com { color: var(--sx-com); font-style: italic; }
+.t-punct { color: var(--dim); }
+
+/* ─── Fin ─── */
+.final { display: flex; flex-direction: column; gap: 4px; }
+.final .big { color: var(--dim); font-variant-numeric: tabular-nums; }
+.final .big b { color: var(--lvl); font-weight: 800; }
+.rank { font-weight: 800; letter-spacing: .06em; color: var(--fg); }
+.rank.root { color: var(--ok); }
+.final .sub { color: var(--dim); font-style: italic; }
+.final .sub b { color: var(--fg); font-style: normal; }
+.errors { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.errors h3 { color: var(--sx-com); font-style: italic; margin: 14px 0 6px; }
+.err { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.err .eq { font-weight: 700; }
+.err .ey { color: var(--ko); overflow-wrap: anywhere; }
+.err .ea { overflow-wrap: anywhere; }
+.err .ea::before { content: "✔ "; color: var(--ok); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.actions button { color: var(--dim); }
+.actions button::before { content: "> "; color: var(--faint); }
+.actions button:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 4px; }
+.actions button.main { color: var(--lvl); font-weight: 800; }
+.actions button.main::before { color: var(--lvl); }
+
+.foot { color: var(--faint); font-style: italic; border-top: 1px solid var(--line); padding-top: 12px; }
+
+.flash-ok { animation: fok .5s ease-out; }
+.flash-ko { animation: fko .4s ease-out; }
+@keyframes fok { from { box-shadow: 0 0 0 1px var(--ok), 0 0 20px var(--ok); } to { box-shadow: none; } }
+@keyframes fko { 0%,100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor { animation: none; }
+  .flash-ok, .flash-ko { animation: none; }
+}
+@media (max-width: 480px) {
+  :root { --size: 13px; }
+  .cmdline { flex-direction: column; gap: 2px; }
+  .field { width: 100%; }
+  .field input, .field .mirror { font-size: 16px; } /* évite le zoom auto sur iPhone */
+}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script src="data.js"></script>
+<script>
+(() => {
+"use strict";
+const Q = window.NTR_QUESTIONS || [];
+const app = document.getElementById("app");
+const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+
+const LANGS = {
+  shell:  { name: "Shell",  file: "bash", prompt: lvl => `${lvl}@root:~$`,
+            desc: "<b>Parler à l'ordinateur sans souris</b> : naviguer, manipuler des fichiers, lancer des programmes." },
+  python: { name: "Python", file: "python3", prompt: () => ">>>",
+            desc: "<b>Le langage qui se lit presque comme de l'anglais</b> : automatiser, analyser, créer des outils." },
+  html:   { name: "HTML",   file: "index.html", prompt: () => "html ▸",
+            desc: "<b>Le squelette de chaque page web</b> : des balises qui disent au navigateur quoi afficher." }
+};
+const COUNT_DESC = {
+  5: "<b>Échauffement</b> : deux minutes pour tester.",
+  10: "<b>La partie standard</b> : de quoi voir où tu en es.",
+  15: "<b>Entraînement sérieux</b> : la difficulté monte vraiment.",
+  20: "<b>Le marathon</b> : la difficulté grimpe jusqu'au bout."
+};
+const LEVELS = {
+  noob:  { name: "NOOB",  desc: "<b>3 propositions</b> affichées, tu tapes la bonne. Questions faciles d'abord.", tiers: [[1],[2],[3]] },
+  geek:  { name: "GEEK",  desc: "<b>Un indice</b>, pas de propositions : à toi de taper. Questions faciles et moyennes.", tiers: [[1,2],[3]] },
+  elite: { name: "ELITE", desc: "<b>Saisie directe</b>, aucune aide. Questions difficiles en priorité.", tiers: [[3],[2],[1]] }
+};
+const COUNTS = [5, 10, 15, 20];
+const MODES = {
+  chill:   { name: "CHILL" },
+  serious: { name: "SERIOUS" },
+  killer:  { name: "KILLER" }
+};
+const PER_Q = { noob: 30, geek: 25, elite: 20 }; // secondes par question en mode Killer
+const fmt = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
+function modeDesc() {
+  if (state.mode === "chill") return "<b>Pas de chrono</b> : prends tout ton temps.";
+  if (state.mode === "serious") return "<b>Un chrono</b> pour suivre ton temps, en pause pendant les corrections.";
+  if (state.mode === "killer") {
+    const tail = state.level && state.count
+      ? `${state.count} × ${PER_Q[state.level]} s = <b>${fmt(state.count * PER_Q[state.level] * 1000)}</b>.`
+      : "30 s par question en Noob, 25 en Geek, 20 en Elite.";
+    return `<b>Compte à rebours</b> : à zéro, la partie s'arrête. ${tail}`;
+  }
+  return "";
+}
+
+// aucun choix présélectionné : l'accueil démarre en vert (couleur Noob) jusqu'au choix du niveau
+const state = { lang: null, level: null, count: null, mode: null, elapsed: 0, runStart: null, timedOut: false, isRetry: false, list: [], i: 0, score: 0, results: [], phase: "", booted: false, choices: [], tried: false };
+
+// ─── stockage local (meilleurs scores) ───
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem("ntr:" + k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem("ntr:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+// ─── utilitaires ───
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const $ = s => app.querySelector(s);
+const cap = s => s.charAt(0) + s.slice(1).toLowerCase();
+const mainAnswer = q => q.a.find(a => !a.startsWith("re:"));
+
+// ─── coloration syntaxique ───
+function hlShell(s) {
+  let out = "", expectCmd = true, m;
+  const re = /("[^"]*"?|'[^']*'?)|(\s+)|(\|\||&&|>>|2>|[|><;&])|(-{1,2}[\w-]*)|([^\s|><;&"']+)/g;
+  while ((m = re.exec(s))) {
+    if (m[1]) out += `<span class="t-str">${esc(m[1])}</span>`;
+    else if (m[2]) out += m[2];
+    else if (m[3]) { out += `<span class="t-op">${esc(m[3])}</span>`; expectCmd = /[|;&]/.test(m[3]); }
+    else if (m[4]) out += `<span class="t-flag">${esc(m[4])}</span>`;
+    else if (m[5]) {
+      if (expectCmd) { out += `<span class="t-cmd">${esc(m[5])}</span>`; expectCmd = false; }
+      else if (/^\d+$/.test(m[5])) out += `<span class="t-num">${esc(m[5])}</span>`;
+      else out += esc(m[5]);
+    }
+  }
+  return out;
+}
+const PY_KW = /^(def|for|in|if|else|elif|while|return|import|from|as|with|try|except|finally|lambda|class|True|False|None|and|or|not|pass|break|continue|is)$/;
+function hlPython(s) {
+  let out = "", m;
+  const re = /([fFrRbB]?"[^"]*"?|[fFrRbB]?'[^']*'?)|(#.*)|(\d+(?:\.\d+)?)|([A-Za-z_]\w*)|(\s+)|([()[\]{}:,.])|(.)/g;
+  while ((m = re.exec(s))) {
+    if (m[1]) out += `<span class="t-str">${esc(m[1])}</span>`;
+    else if (m[2]) out += `<span class="t-com">${esc(m[2])}</span>`;
+    else if (m[3]) out += `<span class="t-num">${m[3]}</span>`;
+    else if (m[4]) {
+      if (PY_KW.test(m[4])) out += `<span class="t-kw">${m[4]}</span>`;
+      else if (s[re.lastIndex] === "(") out += `<span class="t-fn">${m[4]}</span>`;
+      else out += m[4];
+    }
+    else if (m[5]) out += m[5];
+    else if (m[6]) out += `<span class="t-punct">${esc(m[6])}</span>`;
+    else out += `<span class="t-op">${esc(m[7])}</span>`;
+  }
+  return out;
+}
+function hlTag(t) {
+  if (t.startsWith("<!--")) return `<span class="t-com">${esc(t)}</span>`;
+  const head = t.match(/^(<[\/!]?)([\w-]*)/);
+  let out = `<span class="t-punct">${esc(head[1])}</span><span class="t-tag">${esc(head[2])}</span>`;
+  const rest = t.slice(head[0].length);
+  const re = /(\s+)|([\w-]+)(?:(=)("[^"]*"?|'[^']*'?|[^\s>]*))?|(\/?>)|(.)/g;
+  let m;
+  while ((m = re.exec(rest))) {
+    if (m[1]) out += m[1];
+    else if (m[2]) out += `<span class="t-attr">${esc(m[2])}</span>` + (m[3] ? `<span class="t-punct">=</span><span class="t-str">${esc(m[4] || "")}</span>` : "");
+    else if (m[5]) out += `<span class="t-punct">${esc(m[5])}</span>`;
+    else out += esc(m[6]);
+  }
+  return out;
+}
+function hlHtml(s) {
+  let out = "", last = 0, m;
+  const re = /<!--[\s\S]*?(?:-->|$)|<[^>]*>?/g;
+  while ((m = re.exec(s))) {
+    out += esc(s.slice(last, m.index)) + hlTag(m[0]);
+    last = re.lastIndex;
+    if (m[0] === "") re.lastIndex++;
+  }
+  return out + esc(s.slice(last));
+}
+const HL = { shell: hlShell, python: hlPython, html: hlHtml };
+const hl = (s, lang) => (HL[lang] || esc)(s);
+const code = (s, lang) => `<code>${hl(s, lang)}</code>`;
+const richText = (s, lang) => esc(s).replace(/`([^`]+)`/g, (_, c) => code(c.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&"), lang));
+
+// ─── vérification des réponses ───
+function normalize(s, lang) {
+  s = String(s).replace(/[‘’“”«»]/g, '"').replace(/'/g, '"').replace(/\s+/g, " ").trim();
+  if (lang === "shell") s = s.replace(/\s*(\|\||&&|>>|\||>|<|;)\s*/g, "$1");
+  if (lang === "python") s = s.replace(/\s*([()[\]{},:=+\-*/<>%])\s*/g, "$1").replace(/;$/, "");
+  if (lang === "html") s = s.toLowerCase().replace(/>\s+</g, "><").replace(/\s*=\s*/g, "=").replace(/\s*\/>/g, ">").replace(/\s+>/g, ">");
+  return s;
+}
+function isCorrect(input, q) {
+  const n = normalize(input, q.lang);
+  if (!n) return false;
+  return q.a.some(a => {
+    if (a.startsWith("re:")) { try { return new RegExp(a.slice(3), q.lang === "html" ? "i" : "").test(n); } catch (e) { return false; } }
+    return normalize(a, q.lang) === n;
+  });
+}
+window.NTR_check = isCorrect; // pratique pour tester dans la console
+
+// ─── tirage des questions ───
+function pick(lang, level, count) {
+  const pool = Q.filter(q => q.lang === lang);
+  let chosen = [];
+  for (const tier of LEVELS[level].tiers) {
+    if (chosen.length >= count) break;
+    chosen = chosen.concat(shuffle(pool.filter(q => tier.includes(q.d))).slice(0, count - chosen.length));
+  }
+  return shuffle(chosen).sort((a, b) => a.d - b.d); // progression du plus facile au plus dur
+}
+
+// ─── écrans ───
+function setLevel(l) { state.level = l; document.body.dataset.level = l || "noob"; }
+const ready = () => state.lang && state.level && state.count && state.mode;
+
+function screenHome() {
+  pauseClock();
+  setLevel(state.level);
+  state.phase = "home";
+  const poolSize = state.lang ? Q.filter(q => q.lang === state.lang).length : 0;
+  const best = state.lang && state.level ? store.get(`best:${state.lang}:${state.level}`) : null;
+  const missing = [!state.lang && "un langage", !state.level && "un niveau", !state.count && "un nombre de questions"].filter(Boolean);
+  app.innerHTML = `
+    <h1 class="title"><button id="title" type="button" aria-label="NoobToRoot, revenir au début"></button></h1>
+    <p class="tagline">Apprends <b>Python</b>, le <b>Shell</b> et le <b>HTML</b>, une commande à la fois.</p>
+    <div class="setup">
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --langage</div>
+          <div class="opts" data-key="lang">${Object.entries(LANGS).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.lang}">${v.name}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${state.lang ? LANGS[state.lang].desc : ""}</div>
+      </div>
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --niveau</div>
+          <div class="opts" data-key="level">${Object.entries(LEVELS).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.level}">${cap(v.name)}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${state.level ? LEVELS[state.level].desc : ""}</div>
+      </div>
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --questions</div>
+          <div class="opts" data-key="count">${COUNTS.map(n => `<button class="opt" data-v="${n}" aria-pressed="${n === state.count}">${n}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${state.count ? COUNT_DESC[state.count] : ""}</div>
+      </div>
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --chrono</div>
+          <div class="opts" data-key="mode">${Object.entries(MODES).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.mode}">${cap(v.name)}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${modeDesc()}</div>
+      </div>
+      <button class="go" id="go" aria-hidden="${!ready()}" ${ready() ? "" : 'tabindex="-1"'}>./start</button>
+    </div>`;
+
+  app.querySelectorAll(".opts").forEach(g => g.addEventListener("click", e => {
+    const b = e.target.closest(".opt"); if (!b) return;
+    const key = g.dataset.key; const v = key === "count" ? +b.dataset.v : b.dataset.v;
+    state[key] = v;
+    state.booted = true;
+    screenHome();
+  }));
+  $("#go").addEventListener("click", () => { if (ready()) start(); else { state.tried = true; screenHome(); } });
+  $("#title").addEventListener("click", goHome);
+  typeTitle();
+}
+
+// retour à l'accueil depuis n'importe quel écran, avec l'animation du titre
+function goHome() { Object.assign(state, { booted: false, tried: false, lang: null, level: null, count: null, mode: null }); screenHome(); }
+
+// titre tapé lettre par lettre, façon machine à écrire
+const TITLE = [["Noob", "tn"], ["To", "tg"], ["Root", "te"]];
+function titleFrame(n) {
+  let html = "", k = 0;
+  TITLE.forEach(([w, c]) => {
+    const vis = w.slice(0, Math.max(0, Math.min(w.length, n - k)));
+    if (vis) html += `<span class="${c}">${vis}</span>`;
+    k += w.length;
+  });
+  return html + `<span class="cursor" aria-hidden="true">_</span>`;
+}
+const TITLE_LEN = TITLE.reduce((s, [w]) => s + w.length, 0);
+
+let titleTimer = 0;
+function typeTitle() {
+  const t = $("#title");
+  clearTimeout(titleTimer);
+  if (state.booted || reduceMotion) { t.innerHTML = titleFrame(TITLE_LEN); return; }
+  state.booted = true;
+  t.innerHTML = titleFrame(0);
+  let n = 0;
+  const tick = () => {
+    if (!t.isConnected) return;
+    t.innerHTML = titleFrame(++n);
+    if (n < TITLE_LEN) titleTimer = setTimeout(tick, 95 + Math.random() * 70);
+  };
+  titleTimer = setTimeout(tick, 300);
+}
+
+function start(list) {
+  state.isRetry = Array.isArray(list);
+  state.list = state.isRetry ? list : pick(state.lang, state.level, state.count);
+  state.i = 0; state.score = 0; state.results = [];
+  state.elapsed = 0; state.runStart = null; state.timedOut = false;
+  screenQuestion();
+}
+
+// ─── chrono ───
+// Serious : chrono qui monte. Killer : compte à rebours global (PER_Q × nb de questions).
+// Dans les deux cas, le temps ne court que pendant la saisie, pas pendant la correction.
+let clock = 0;
+const timed = () => state.mode === "serious" || state.mode === "killer";
+const liveElapsed = () => state.elapsed + (state.runStart !== null ? performance.now() - state.runStart : 0);
+const budget = () => state.list.length * PER_Q[state.level] * 1000;
+function clockHTML() {
+  if (!timed()) return "";
+  return `<span class="clock" id="clock">${state.mode === "killer" ? "countdown" : "time"} <b>--:--</b></span>`;
+}
+function tickClock() {
+  const el = app.querySelector("#clock");
+  if (!el) return;
+  if (state.mode === "serious") { el.querySelector("b").textContent = fmt(liveElapsed()); return; }
+  const rem = budget() - liveElapsed();
+  el.querySelector("b").textContent = fmt(Math.ceil(rem / 1000) * 1000);
+  el.classList.toggle("low", rem < 10000);
+  if (rem <= 0) timeUp();
+}
+function startClock() {
+  clearInterval(clock);
+  if (!timed()) return;
+  state.runStart = performance.now();
+  clock = setInterval(tickClock, 200);
+  tickClock();
+}
+function pauseClock() {
+  clearInterval(clock);
+  if (state.runStart !== null) { state.elapsed += performance.now() - state.runStart; state.runStart = null; }
+}
+
+// meilleurs scores du langage + niveau en cours, affichés comme des variables Python
+const timeKey = () => `time:${state.lang}:${state.level}:${state.list.length}`;
+function bestVar() {
+  const b = store.get(`best:${state.lang}:${state.level}`);
+  let html = `best_score = <b>${b ? `${b.score}/${b.total}` : "None"}</b>`;
+  if (timed()) {
+    const t = store.get(timeKey());
+    html += ` · best_time = <b>${t ? fmt(t) : "None"}</b>`;
+  }
+  return `<div class="best-var" title="best_time : ton meilleur temps sur un sans-faute, pour ce langage, ce niveau et ce nombre de questions">${html}</div>`;
+}
+
+// Hauteur du cadre : on mesure un écran de question Noob type (3 propositions, avant correction)
+// dans un cadre invisible, et cette hauteur devient le minimum de tous les écrans.
+function measureFrame() {
+  const probe = document.createElement("div");
+  probe.className = "wrap";
+  probe.setAttribute("aria-hidden", "true");
+  probe.style.cssText = "position:absolute;left:0;right:0;top:0;visibility:hidden;pointer-events:none;min-height:0";
+  probe.innerHTML = `
+    <div class="hud"><button class="brand">NoobToRoot_</button><div class="hud-r"><div class="hud-line"><span>Shell</span><span class="badge">NOOB</span><span>Q 01/10</span><span class="sc">score <b>0</b></span><span>countdown <b>00:00</b></span></div><div class="best-var">best_score = <b>None</b> · best_time = <b>None</b></div></div></div>
+    <div class="bar">░░░░░░░░░░</div>
+    <div class="qblock"><p class="q-text">Afficher la liste des fichiers du dossier courant</p></div>
+    <div class="zone split"><div class="choices"><div class="choice"><span class="k">[1]</span><code>ls</code></div><div class="choice"><span class="k">[2]</span><code>cd</code></div><div class="choice"><span class="k">[3]</span><code>pwd</code></div></div></div>
+    <div class="term"><div class="term-head"><i></i><i></i><i></i><span>bash</span></div><div class="cmdline"><span class="prompt">noob@root:~$</span><div class="field"><input></div></div><div class="term-foot"><span>Entrée pour valider</span><button>passer ▸</button></div></div>`;
+  document.body.appendChild(probe);
+  const h = probe.offsetHeight;
+  probe.remove();
+  document.documentElement.style.setProperty("--frame-h", h + "px");
+}
+measureFrame();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureFrame);
+let resizeT = 0;
+window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(measureFrame, 150); });
+
+function barHTML() {
+  return state.list.map((_, k) => {
+    const r = state.results[k];
+    if (r) return `<span class="${r.ok ? "ok" : "ko"}">█</span>`;
+    return k === state.i ? `<span class="on">▓</span>` : "░";
+  }).join("");
+}
+
+function screenQuestion() {
+  const q = state.list[state.i], L = LANGS[q.lang], lvl = state.level;
+  state.phase = "type";
+  state.choices = lvl === "noob" ? shuffle([{ v: mainAnswer(q), ok: true }, ...q.x.map(v => ({ v, ok: false }))]) : [];
+  const pad = n => String(n).padStart(2, "0");
+  app.innerHTML = `
+    <div class="hud">
+      <button class="brand" type="button" title="Revenir au début">NoobToRoot<span class="cursor" aria-hidden="true">_</span></button>
+      <div class="hud-r">
+        <div class="hud-line">
+          <span>${L.name}</span>
+          <span class="badge">${LEVELS[lvl].name}</span>
+          <span>Q ${pad(state.i + 1)}/${pad(state.list.length)}</span>
+          <span class="sc">score <b>${state.score}</b></span>
+          ${clockHTML()}
+        </div>
+        ${bestVar()}
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true">${barHTML()}</div>
+    <div class="qblock">
+      <p class="q-text">${esc(q.q)}</p>
+      ${lvl === "geek" ? `<div class="hint">${esc(q.h)}</div>` : ""}
+    </div>
+    <div class="zone ${lvl === "noob" ? "split" : ""}">
+      ${lvl === "noob" ? `<div class="choices">${state.choices.map((c, k) => `<div class="choice" data-k="${k}"><span class="k">[${k + 1}]</span>${code(c.v, q.lang)}</div>`).join("")}</div>` : ""}
+      <div id="fb" class="fbcol" aria-live="polite"></div>
+    </div>
+    <div class="term" id="term">
+      <div class="term-head"><i></i><i></i><i></i><span>${esc(L.file)}</span></div>
+      <div class="cmdline">
+        <span class="prompt">${esc(L.prompt(lvl))}</span>
+        <div class="field">
+          <pre class="mirror" id="mirror" aria-hidden="true"></pre>
+          <input id="cmd" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Ta réponse">
+        </div>
+      </div>
+      <div class="term-foot"><span>Entrée pour valider</span><button id="skip" type="button">passer ▸</button></div>
+    </div>`;
+
+  $(".brand").addEventListener("click", goHome);
+  // sur téléphone (sans touche Entrée une fois le clavier fermé) : toucher la zone ou le terminal fait avancer
+  [".zone", "#term"].forEach(s => $(s).addEventListener("click", e => { if (state.phase === "done" && !e.target.closest("button")) next(); }));
+  const inp = $("#cmd"), mir = $("#mirror");
+  const sync = () => { mir.innerHTML = hl(inp.value, q.lang) + " "; mir.scrollLeft = inp.scrollLeft; };
+  ["input", "scroll", "keyup", "click"].forEach(ev => inp.addEventListener(ev, sync));
+  // stopPropagation : sinon la même touche Entrée ferait aussi passer à la question suivante
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); submit(); } });
+  $("#skip").addEventListener("click", () => finishQuestion(false, "", true));
+  inp.placeholder = lvl === "elite" ? "" : "tape ta réponse";
+  inp.focus();
+  sync();
+  startClock();
+}
+
+// Killer : le compte à rebours atteint zéro
+function timeUp() {
+  if (state.phase !== "type") return;
+  pauseClock();
+  state.phase = "done";
+  state.timedOut = true;
+  const q = state.list[state.i];
+  for (let k = state.i; k < state.list.length; k++) state.results[k] = { q: state.list[k], ok: false, given: "", timeout: true };
+  state.i = state.list.length - 1; // la suite mène directement au score
+  $("#cmd").disabled = true;
+  $("#skip").hidden = true;
+  state.choices.forEach((c, k) => { if (c.ok) app.querySelector(`.choice[data-k="${k}"]`).classList.add("right"); });
+  $("#term").classList.add("flash-ko");
+  app.querySelector(".bar").innerHTML = barHTML();
+  $("#fb").innerHTML = `
+    <div class="fb ko">
+      <span class="verdict">✘ Connexion perdue : temps écoulé.</span>
+      <span class="expect">Réponse attendue : ${code(mainAnswer(q), q.lang)}</span>
+      <span class="expl">Les questions restantes comptent comme ratées.</span>
+    </div>`;
+}
+
+function submit() {
+  if (state.phase !== "type") return;
+  const q = state.list[state.i], val = $("#cmd").value;
+  if (!val.trim()) return;
+  finishQuestion(isCorrect(val, q), val);
+}
+
+function finishQuestion(ok, given, skipped) {
+  if (state.phase !== "type") return;
+  pauseClock();
+  state.phase = "done";
+  tickClock();
+  const q = state.list[state.i];
+  if (ok) state.score++;
+  state.results[state.i] = { q, ok, given: skipped ? "" : given };
+  $("#cmd").disabled = true;
+  $("#skip").hidden = true;
+  // en mode Noob, on révèle la bonne proposition (et celle tapée si c'est un leurre)
+  state.choices.forEach((c, k) => {
+    const el = app.querySelector(`.choice[data-k="${k}"]`);
+    if (c.ok) el.classList.add("right");
+    else if (!ok && given && normalize(given, q.lang) === normalize(c.v, q.lang)) el.classList.add("wrong");
+  });
+  $("#term").classList.add(ok ? "flash-ok" : "flash-ko");
+  app.querySelector(".sc b").textContent = state.score;
+  app.querySelector(".bar").innerHTML = barHTML();
+  const last = state.i === state.list.length - 1;
+  // l'explication n'apparaît qu'en cas d'erreur ; pas de bouton : Entrée doit devenir un réflexe
+  const showNext = false;
+  $("#fb").innerHTML = `
+    <div class="fb ${ok ? "" : "ko"}">
+      <span class="verdict">${ok ? "✔ Accès accordé. +1" : skipped ? "↷ Question passée." : "✘ Accès refusé."}</span>
+      ${ok ? "" : `<span class="expect">Réponse attendue : ${code(mainAnswer(q), q.lang)}</span>
+      <span class="expl">${richText(q.e, q.lang)}</span>`}
+    </div>
+    ${showNext ? `<button class="next" id="next">${last ? "voir mon score" : "question suivante"} ▸ <span>[Entrée]</span></button>` : ""}`;
+  const nx = $("#next");
+  if (nx) { nx.addEventListener("click", next); setTimeout(() => nx.focus(), 30); }
+}
+
+function next() {
+  if (state.phase !== "done") return;
+  state.i++;
+  if (state.i >= state.list.length) screenEnd(); else screenQuestion();
+}
+
+function rankOf(p) {
+  if (p === 1) return ["ACCÈS ROOT OBTENU", "root"];
+  if (p >= .7) return ["PRIVILÈGES ÉLEVÉS", ""];
+  if (p >= .4) return ["UTILISATEUR STANDARD", ""];
+  return ["ACCÈS REFUSÉ · RETENTE TA CHANCE", ""];
+}
+
+function screenEnd() {
+  state.phase = "end";
+  pauseClock();
+  const total = state.list.length, p = total ? state.score / total : 0;
+  const key = `best:${state.lang}:${state.level}`, prev = store.get(key);
+  // une révision des erreurs ne compte pas pour les records
+  const record = !state.isRetry && (!prev || p > prev.score / prev.total);
+  if (record) store.set(key, { score: state.score, total });
+  // best_time : seulement sur un sans-faute complet, en Serious ou Killer
+  const tPrev = timed() ? store.get(timeKey()) : null;
+  const timeRecord = timed() && !state.isRetry && !state.timedOut && state.score === total && (!tPrev || state.elapsed < tPrev);
+  if (timeRecord) store.set(timeKey(), Math.round(state.elapsed));
+  const timeLine = !timed() ? ""
+    : state.timedOut ? `<div class="sub">temps écoulé : <b>${fmt(budget())}</b> utilisées</div>`
+    : `<div class="sub">${state.mode === "killer" ? `temps utilisé : <b>${fmt(state.elapsed)}</b> sur <b>${fmt(budget())}</b>` : `temps : <b>${fmt(state.elapsed)}</b>`}${timeRecord && tPrev ? " · <b>nouveau best_time !</b>" : ""}</div>`;
+  const [rank, cls] = state.timedOut ? ["SESSION EXPIRÉE", ""] : rankOf(p);
+  const errs = state.results.filter(r => !r.ok);
+  const nextLvl = { noob: "geek", geek: "elite" }[state.level];
+  app.innerHTML = `
+    <div class="hud">
+      <button class="brand" type="button" title="Revenir au début">NoobToRoot<span class="cursor" aria-hidden="true">_</span></button>
+      <div class="hud-r">
+        <div class="hud-line"><span>${LANGS[state.lang].name}</span><span class="badge">${LEVELS[state.level].name}</span></div>
+        ${bestVar()}
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true">${barHTML()}</div>
+    <div class="final">
+      <div class="big">score final : <b>${state.score}/${total}</b> · ${Math.round(p * 100)} %</div>
+      <div class="rank ${cls}">${rank}</div>
+      ${timeLine}
+      <div class="sub">${record && prev ? "<b>nouveau record !</b>" : ""}${!record && prev ? `record : <b>${prev.score}/${prev.total}</b>` : ""}${p >= .8 && nextLvl ? ` prêt·e pour le niveau <b>${LEVELS[nextLvl].name}</b> ?` : ""}</div>
+    </div>
+    <div class="actions">
+      <button class="main" id="again">rejouer</button>
+      ${errs.length ? `<button id="retry">revoir mes ${errs.length} erreur${errs.length > 1 ? "s" : ""}</button>` : ""}
+      ${p >= .8 && nextLvl ? `<button id="up">passer en ${LEVELS[nextLvl].name}</button>` : ""}
+      <button id="menu">menu</button>
+    </div>
+    ${errs.length ? `<div class="errors"><h3>// à revoir</h3>${errs.map(r => `
+      <div class="err">
+        <span class="eq">${esc(r.q.q)}</span>
+        <span class="ey">${r.given ? `tu as tapé : ${code(r.given, r.q.lang)}` : r.timeout ? "temps écoulé" : "passée"}</span>
+        <span class="ea">${code(mainAnswer(r.q), r.q.lang)}</span>
+      </div>`).join("")}</div>` : ""}`;
+  $("#again").addEventListener("click", () => start());
+  $("#menu").addEventListener("click", screenHome);
+  $(".brand").addEventListener("click", goHome);
+  if (errs.length) $("#retry").addEventListener("click", () => start(shuffle(errs.map(r => r.q))));
+  if ($("#up")) $("#up").addEventListener("click", () => { setLevel(nextLvl); start(); });
+  $("#again").focus();
+}
+
+// ─── clavier global ───
+document.addEventListener("keydown", e => {
+  if (state.phase === "done" && e.key === "Enter" && e.target.id !== "next") { e.preventDefault(); next(); }
+  else if (state.phase === "home" && e.key === "Enter" && e.target === document.body && ready()) { e.preventDefault(); start(); }
+});
+
+screenHome();
+})();
+</script>

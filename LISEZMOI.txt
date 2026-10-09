@@ -1,0 +1,38 @@
+NoobToRoot
+==========
+
+Jouer
+  Double-clique sur index.html (clé USB, ordinateur, sans Internet).
+  Pour le web : dépose index.html et data.js dans un dépôt GitHub et active GitHub Pages.
+
+Fichiers
+  index.html         le jeu (interface, règles, coloration syntaxique)
+  data.js            la banque de questions lue par le jeu
+  NoobToRoot.xlsx    la banque de questions dans Excel (180 questions)
+  questions.csv      la même banque, à importer dans Google Sheets
+  csv_vers_data.py   regénère data.js depuis l'Excel ou le Sheet
+
+Modifier les questions
+  Avec Excel :
+    1. Ajoute ou corrige des lignes dans NoobToRoot.xlsx (une ligne = une question)
+    2. python3 csv_vers_data.py NoobToRoot.xlsx
+    3. Recharge index.html
+  Avec Google Sheets :
+    1. Fichier > Importer > questions.csv
+    2. Modifie, puis Fichier > Télécharger > .csv
+    3. python3 csv_vers_data.py questions.csv
+
+Colonnes
+  langage      shell, python ou html
+  difficulte   1 facile, 2 moyen, 3 difficile
+  reponse1     la correction affichée ; reponse2 à 6 = variantes acceptées
+               une réponse qui commence par re: est une expression régulière
+  leurre1/2    les deux mauvais choix du mode Noob
+  indice       affiché en mode Geek
+  explication  affichée après chaque réponse ; le code entre `backticks`
+
+Tolérance à la saisie
+  Espaces en trop et guillemets simples/doubles sont ignorés partout.
+  Python : espaces autour des opérateurs et parenthèses ignorés.
+  HTML : majuscules/minuscules ignorées, <br/> = <br>.
+  Shell : la casse compte (ls ≠ LS), comme dans un vrai terminal.
