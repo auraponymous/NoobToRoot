@@ -27,8 +27,8 @@ Colonnes
   difficulte   1 facile, 2 moyen, 3 difficile
   reponse1     la correction affichée ; reponse2 à 6 = variantes acceptées
                une réponse qui commence par re: est une expression régulière
-  leurre1/2    les deux mauvais choix du mode Noob
-  indice       affiché en mode Geek
+  leurre1/2    les deux mauvais choix du mode Pick
+  indice       affiché en mode Hint
   explication  affichée après chaque réponse ; le code entre `backticks`
 
 Tolérance à la saisie

@@ -57,7 +57,7 @@ def convert(csv_path: Path, out_path: Path) -> None:
             if not answers:
                 errors.append(f"ligne {n} : aucune réponse")
             if not all(decoys):
-                errors.append(f"ligne {n} : il faut deux leurres pour le mode Noob")
+                errors.append(f"ligne {n} : il faut deux leurres pour le mode Pick")
             rows.append({
                 "id": r.get("id") or f"Q-{n}", "lang": lang, "d": diff, "q": r["question"],
                 "a": answers, "x": decoys, "h": r.get("indice", ""), "e": r.get("explication", ""),

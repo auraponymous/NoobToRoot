@@ -14,7 +14,7 @@ noob@root:~$ ls -la
 ## Fonctionnalités
 
 - **180 questions** : 60 par langage (Shell, Python, HTML), réparties en 20 faciles, 20 moyennes et 20 difficiles.
-- **3 niveaux** qui changent l'aide reçue et la difficulté des questions.
+- **3 niveaux de difficulté** et **3 niveaux d'aide**, réglables séparément.
 - **3 modes de chrono**, du jeu tranquille au compte à rebours sans pitié.
 - **Coloration syntaxique en direct** pendant la frappe, propre à chaque langage.
 - **Correction immédiate** : en cas d'erreur, le jeu affiche la réponse attendue et une explication courte.
@@ -23,15 +23,23 @@ noob@root:~$ ls -la
 - **Révision des erreurs** : en fin de partie, tu peux rejouer uniquement les questions ratées.
 - **Banque de questions éditable** dans Excel ou Google Sheets, sans toucher au code.
 
-## Les niveaux
+## Niveau et aide : deux réglages séparés
 
-| Niveau | Aide | Questions |
-|---|---|---|
-| **Noob** | 3 propositions affichées, tu tapes la bonne | Faciles d'abord |
-| **Geek** | Un indice, pas de propositions | Faciles et moyennes |
-| **Elite** | Aucune aide, saisie directe | Difficiles en priorité |
+Le **niveau** règle la difficulté des questions, l'**assist** règle l'aide reçue. Les 9 combinaisons permettent une vraie progression : des bases sans aucune aide pour vérifier qu'on les maîtrise, ou des commandes avancées avec propositions pour les découvrir.
 
-Dans une partie, les questions vont toujours de la plus facile à la plus difficile.
+| `--niveau` | Questions |
+|---|---|
+| **Noob** | 75 % faciles, 25 % moyennes pour tirer vers le haut |
+| **Geek** | 75 % moyennes, 25 % difficiles pour tirer vers le haut |
+| **Elite** | 100 % difficiles |
+
+| `--assist` | Aide |
+|---|---|
+| **Pick** | 3 propositions affichées, tu tapes la bonne |
+| **Hint** | Un indice pour te mettre sur la piste |
+| **Raw** | Saisie brute, comme dans un vrai terminal |
+
+Dans une partie, les questions vont toujours de la plus facile à la plus difficile. Les records sont propres à chaque combinaison de langage, niveau et assist.
 
 ## Les modes de chrono
 
@@ -107,8 +115,8 @@ Le script vérifie chaque ligne et signale les erreurs (langage inconnu, difficu
 | `question` | La consigne affichée au joueur |
 | `reponse1` | La réponse affichée en correction |
 | `reponse2` à `reponse6` | Variantes également acceptées (facultatives) |
-| `leurre1`, `leurre2` | Les deux mauvaises propositions du niveau Noob |
-| `indice` | L'aide affichée au niveau Geek |
+| `leurre1`, `leurre2` | Les deux mauvaises propositions du mode Pick |
+| `indice` | L'aide affichée en mode Hint |
 | `explication` | Affichée en cas d'erreur ; le code se met entre `backticks` |
 
 Une réponse qui commence par `re:` est une expression régulière. Par exemple, `re:^#.*` accepte n'importe quel commentaire Python.
@@ -134,6 +142,3 @@ Une réponse qui commence par `re:` est une expression régulière. Par exemple,
 - Un choix de 30 questions par partie.
 - De nouveaux langages : Git, SQL, CSS…
 - Un mode révision qui reprend les questions les plus souvent ratées.
-
-## Licence 
-Auraponymous 2026
