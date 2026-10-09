@@ -135,4 +135,5 @@ Une réponse qui commence par `re:` est une expression régulière. Par exemple,
 - De nouveaux langages : Git, SQL, CSS…
 - Un mode révision qui reprend les questions les plus souvent ratées.
 
-## Licence auraponymous 2026
+## Licence 
+Auraponymous 2026
