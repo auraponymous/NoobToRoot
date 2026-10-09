@@ -81,6 +81,7 @@ b, strong { font-weight: 700; }
 }
 .title .tn { color: var(--noob); text-shadow: 0 0 14px color-mix(in srgb, var(--noob) 40%, transparent); }
 .title .tg { color: var(--geek); text-shadow: 0 0 14px color-mix(in srgb, var(--geek) 40%, transparent); }
+.title .cursor { color: var(--fg); } /* curseur blanc sur le titre d'accueil uniquement */
 .title .te { color: var(--elite); text-shadow: 0 0 14px color-mix(in srgb, var(--elite) 40%, transparent); }
 .cursor { display: inline-block; color: var(--lvl); font-weight: 700; margin-left: .04em; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
@@ -129,7 +130,7 @@ b, strong { font-weight: 700; }
 .clock b { color: var(--fg); font-variant-numeric: tabular-nums; }
 .clock.low, .clock.low b { color: var(--ko); }
 .clock.low b { animation: blink 1s steps(1) infinite; }
-.brand:hover, .title button:hover span:not(.cursor) { text-decoration: underline; text-underline-offset: 4px; }
+.brand:hover { text-decoration: underline; text-underline-offset: 4px; }
 .badge { color: var(--lvl); font-weight: 800; }
 .badge::before { content: "["; color: var(--faint); }
 .badge.as { color: var(--fg); }
