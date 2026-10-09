@@ -88,7 +88,11 @@ b, strong { font-weight: 700; }
 .tagline b { color: var(--fg); }
 
 /* le bloc de choix occupe tout le bas du cadre : ./start se cale dans le coin inférieur droit */
-.setup { display: flex; flex-direction: column; gap: 12px; margin-top: 4px; flex: 1; }
+.setup { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; flex: 1; }
+/* dernière ligne : explication du chrono à gauche, ./start à droite */
+.lastrow { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.lastrow .desc { flex: 1; min-width: 0; }
+.lastrow .go { margin-top: 0; flex: none; }
 .group { display: flex; flex-direction: column; gap: 2px; }
 .row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
 .label { color: var(--fg); font-weight: 700; }
@@ -241,7 +245,7 @@ code { font-family: var(--mono); }
 .actions button.main { color: var(--lvl); font-weight: 800; }
 .actions button.main::before { color: var(--lvl); }
 
-.credit { text-align: center; color: var(--dim); margin-top: 16px; letter-spacing: .04em; }
+.credit { text-align: center; color: var(--dim); margin-top: 14px; letter-spacing: .04em; font-size: .8em; }
 .foot { color: var(--faint); font-style: italic; border-top: 1px solid var(--line); padding-top: 12px; }
 
 .flash-ok { animation: fok .5s ease-out; }
@@ -479,9 +483,11 @@ function screenHome() {
           <div class="label">choisir --chrono</div>
           <div class="opts" data-key="mode">${Object.entries(MODES).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.mode}">${cap(v.name)}</button>`).join("")}</div>
         </div>
-        <div class="desc">${modeDesc()}</div>
+        <div class="lastrow">
+          <div class="desc">${modeDesc()}</div>
+          <button class="go" id="go" aria-hidden="${!ready()}" ${ready() ? "" : 'tabindex="-1"'}>./start</button>
+        </div>
       </div>
-      <button class="go" id="go" aria-hidden="${!ready()}" ${ready() ? "" : 'tabindex="-1"'}>./start</button>
     </div>`;
 
   app.querySelectorAll(".opts").forEach(g => g.addEventListener("click", e => {
