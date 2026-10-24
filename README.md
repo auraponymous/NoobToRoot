@@ -1,6 +1,6 @@
 # NoobToRoot_
 
-> Apprends **Python**, le **Shell** et le **HTML**, une commande à la fois.
+> Apprends **Python**, le **Shell**, le **HTML** et **Processing**, une commande à la fois.
 
 NoobToRoot est un jeu d'apprentissage au look terminal : une question s'affiche, tu tapes la commande ou le code, et le jeu valide ta réponse. Il tient dans un seul fichier HTML et fonctionne **sans Internet et sans installation**, depuis une clé USB ou en ligne sur GitHub Pages.
 
@@ -13,7 +13,8 @@ noob@root:~$ ls -la
 
 ## Fonctionnalités
 
-- **180 questions** : 60 par langage (Shell, Python, HTML), réparties en 20 faciles, 20 moyennes et 20 difficiles.
+- **240 questions** : 60 par langage (Shell, Python, HTML, Processing), réparties en 20 faciles, 20 moyennes et 20 difficiles.
+- **Processing** en version classique (Java), avec quelques questions Elite sur son cousin p5.js.
 - **OldToRoot**, une page cachée de 200 questions sur les langages d'avant : Fortran, COBOL, BASIC, Pascal et MS-DOS.
 - **3 niveaux de difficulté** et **3 niveaux d'aide**, réglables séparément.
 - **3 modes de chrono**, du jeu tranquille au compte à rebours sans pitié.
@@ -87,9 +88,9 @@ Une pierre tombale, en haut à droite de l'accueil, ouvre **OldToRoot**, la page
 ```
 .
 ├── index.html          # NoobToRoot : interface, règles, coloration syntaxique, chrono
-├── data.js             # les questions de NoobToRoot
+├── data.js             # les questions de NoobToRoot (240)
 ├── oldtoroot.html      # OldToRoot : la page des langages d'avant
-├── data_old.js         # les questions d'OldToRoot
+├── data_old.js         # les questions d'OldToRoot (200)
 ├── NoobToRoot.xlsx     # les deux banques, à éditer dans Excel (onglets « questions » et « OldToRoot »)
 ├── questions.csv       # la banque NoobToRoot, à importer dans Google Sheets
 ├── questions_old.csv   # la banque OldToRoot, à importer dans Google Sheets
@@ -127,8 +128,8 @@ Le script vérifie chaque ligne et signale les erreurs (langage inconnu, difficu
 
 | Colonne | Contenu |
 |---|---|
-| `id` | Identifiant unique, par exemple `SH-12`, `PY-03`, `HT-40` |
-| `langage` | `shell`, `python`, `html` (NoobToRoot) ; `basic`, `msdos`, `cobol`, `pascal`, `fortran` (OldToRoot) |
+| `id` | Identifiant unique, par exemple `SH-12`, `PY-03`, `HT-40`, `PR-21` |
+| `langage` | `shell`, `python`, `html`, `processing` (NoobToRoot) ; `basic`, `msdos`, `cobol`, `pascal`, `fortran` (OldToRoot) |
 | `difficulte` | `1` facile, `2` moyen, `3` difficile |
 | `question` | La consigne affichée au joueur |
 | `reponse1` | La réponse affichée en correction |
@@ -147,6 +148,7 @@ Une réponse qui commence par `re:` est une expression régulière. Par exemple,
 | Shell | Espaces autour de `\|`, `>`, `>>`, `<`, `;`. La casse compte (`ls` ≠ `LS`), comme dans un vrai terminal. |
 | Python | Espaces autour des opérateurs, parenthèses, crochets, virgules et deux-points |
 | HTML | Majuscules et minuscules, espaces entre les balises, `<br/>` équivaut à `<br>` |
+| Processing | Espaces autour de la ponctuation et des opérateurs, point-virgule final facultatif. La casse compte, comme en Java. |
 | Langages d'OldToRoot | Majuscules et minuscules (hors texte entre guillemets), espaces autour de la ponctuation. Le `;` final en Pascal et le `.` final en COBOL sont facultatifs. |
 
 ## Technique

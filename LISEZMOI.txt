@@ -7,8 +7,8 @@ Jouer
   Pour le web : dépose les 4 fichiers du jeu dans un dépôt GitHub et active GitHub Pages.
 
 Fichiers
-  index.html         NoobToRoot (Shell, Python, HTML)
-  data.js            les questions de NoobToRoot (180)
+  index.html         NoobToRoot (Shell, Python, HTML, Processing)
+  data.js            les questions de NoobToRoot (240)
   oldtoroot.html     OldToRoot, les langages d'avant
   data_old.js        les questions d'OldToRoot (200)
   NoobToRoot.xlsx    les deux banques dans Excel (onglets « questions » et « OldToRoot »)
@@ -27,7 +27,7 @@ Modifier les questions
     3. python3 csv_vers_data.py questions.csv   (ou questions_old.csv)
 
 Colonnes
-  langage      shell, python, html ; basic, msdos, cobol, pascal, fortran
+  langage      shell, python, html, processing ; basic, msdos, cobol, pascal, fortran
   difficulte   1 facile, 2 moyen, 3 difficile
   reponse1     la correction affichée ; reponse2 à 6 = variantes acceptées
                une réponse qui commence par re: est une expression régulière
@@ -37,7 +37,8 @@ Colonnes
 
 Tolérance à la saisie
   Espaces en trop et guillemets simples/doubles sont ignorés partout.
-  Python : espaces autour des opérateurs et parenthèses ignorés.
+  Python et Processing : espaces autour des opérateurs et parenthèses ignorés.
+  Processing : point-virgule final facultatif, la casse compte.
   HTML : majuscules/minuscules ignorées, <br/> = <br>.
   Shell : la casse compte (ls ≠ LS), comme dans un vrai terminal.
   OldToRoot : majuscules/minuscules ignorées, sauf entre guillemets.

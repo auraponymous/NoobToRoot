@@ -290,7 +290,9 @@ const LANGS = {
   python: { name: "Python", file: "python3", prompt: () => ">>>",
             desc: "<b>Le langage qui se lit presque comme de l'anglais</b> : automatiser, analyser, créer des outils." },
   html:   { name: "HTML",   file: "index.html", prompt: () => "html ▸",
-            desc: "<b>Le squelette de chaque page web</b> : des balises qui disent au navigateur quoi afficher." }
+            desc: "<b>Le squelette de chaque page web</b> : des balises qui disent au navigateur quoi afficher." },
+  processing: { name: "Processing", file: "sketch.pde", prompt: () => "pde ▸",
+            desc: "<b>Le code des artistes et des designers</b> : dessiner, animer et créer en quelques lignes." }
 };
 const COUNT_DESC = {
   5: "<b>Échauffement</b> : deux minutes pour tester.",
@@ -407,7 +409,28 @@ function hlHtml(s) {
   }
   return out + esc(s.slice(last));
 }
-const HL = { shell: hlShell, python: hlPython, html: hlHtml };
+// Processing : syntaxe Java (types, accolades, point-virgule) et fonctions de dessin
+const PDE_KW = /^(void|int|float|boolean|char|byte|long|double|String|color|PImage|PVector|ArrayList|if|else|for|while|do|return|new|class|extends|true|false|null|this|let|var|const|function|final|static|public|private)$/;
+function hlProcessing(s) {
+  let out = "", m;
+  const re = /(\/\/.*|\/\*[\s\S]*?(?:\*\/|$))|("[^"]*"?|'[^']*'?)|(\d+(?:\.\d+)?f?)(?![\w])|([A-Za-z_]\w*)|(\s+)|([()[\]{};,.])|(.)/g;
+  while ((m = re.exec(s))) {
+    if (m[1]) out += `<span class="t-com">${esc(m[1])}</span>`;
+    else if (m[2]) out += `<span class="t-str">${esc(m[2])}</span>`;
+    else if (m[3]) out += `<span class="t-num">${m[3]}</span>`;
+    else if (m[4]) {
+      if (PDE_KW.test(m[4])) out += `<span class="t-kw">${m[4]}</span>`;
+      else if (/^[A-Z][A-Z_]+$/.test(m[4])) out += `<span class="t-attr">${m[4]}</span>`;
+      else if (s[re.lastIndex] === "(") out += `<span class="t-fn">${m[4]}</span>`;
+      else out += m[4];
+    }
+    else if (m[5]) out += m[5];
+    else if (m[6]) out += `<span class="t-punct">${esc(m[6])}</span>`;
+    else out += `<span class="t-op">${esc(m[7])}</span>`;
+  }
+  return out;
+}
+const HL = { shell: hlShell, python: hlPython, html: hlHtml, processing: hlProcessing };
 const hl = (s, lang) => (HL[lang] || esc)(s);
 const code = (s, lang) => `<code>${hl(s, lang)}</code>`;
 const richText = (s, lang) => esc(s).replace(/`([^`]+)`/g, (_, c) => code(c.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&"), lang));
@@ -417,6 +440,7 @@ function normalize(s, lang) {
   s = String(s).replace(/[‘’“”«»]/g, '"').replace(/'/g, '"').replace(/\s+/g, " ").trim();
   if (lang === "shell") s = s.replace(/\s*(\|\||&&|>>|\||>|<|;)\s*/g, "$1");
   if (lang === "python") s = s.replace(/\s*([()[\]{},:=+\-*/<>%])\s*/g, "$1").replace(/;$/, "");
+  if (lang === "processing") s = s.replace(/\s*([()[\]{},;:=+\-*/<>%!&|.])\s*/g, "$1").replace(/;$/, "");
   if (lang === "html") s = s.toLowerCase().replace(/>\s+</g, "><").replace(/\s*=\s*/g, "=").replace(/\s*\/>/g, ">").replace(/\s+>/g, ">");
   return s;
 }
@@ -460,7 +484,7 @@ function screenHome() {
       <h1 class="title"><button id="title" type="button" aria-label="NoobToRoot, revenir au début"></button></h1>
       <a class="portal tomb" href="oldtoroot.html" title="OldToRoot : les langages d'avant" aria-label="Ouvrir OldToRoot, les langages d'avant">${TOMB}</a>
     </div>
-    <p class="tagline">Apprends <b>Python</b>, le <b>Shell</b> et le <b>HTML</b>, une commande à la fois.</p>
+    <p class="tagline">Apprends <b>Python</b>, le <b>Shell</b>, le <b>HTML</b> et <b>Processing</b>, une commande à la fois.</p>
     <div class="setup">
       <div class="group">
         <div class="row">

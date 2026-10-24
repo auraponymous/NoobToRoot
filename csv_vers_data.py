@@ -12,7 +12,7 @@ Utilisation :
 
 Colonnes attendues (ligne d'en-tête) :
   id, langage, difficulte, question, reponse1 … reponse6, leurre1, leurre2, indice, explication
-  - langage : shell, python, html (NoobToRoot) ; basic, msdos, cobol, pascal, fortran (OldToRoot)
+  - langage : shell, python, html, processing (NoobToRoot) ; basic, msdos, cobol, pascal, fortran (OldToRoot)
   - difficulte : 1 (Noob), 2 (Geek) ou 3 (Elite)
   - reponse1 est la réponse affichée comme correction ; les suivantes sont des variantes acceptées
   - une réponse qui commence par re: est une expression régulière
@@ -24,7 +24,7 @@ import sys
 from pathlib import Path
 
 BANKS = {
-    "noob": {"langs": {"shell", "python", "html"}, "out": "data.js", "var": "NTR_QUESTIONS", "name": "NoobToRoot"},
+    "noob": {"langs": {"shell", "python", "html", "processing"}, "out": "data.js", "var": "NTR_QUESTIONS", "name": "NoobToRoot"},
     "old": {"langs": {"basic", "msdos", "cobol", "pascal", "fortran"}, "out": "data_old.js", "var": "OTR_QUESTIONS", "name": "OldToRoot"},
 }
 
