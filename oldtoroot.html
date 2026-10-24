@@ -1,0 +1,809 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<title>OldToRoot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;0,800;1,400&family=VT323&display=swap">
+<style>
+/* OldToRoot : la salle des archives de NoobToRoot. Blanc sur noir, avec du vert, du jaune et du rouge, comme un vieux moniteur. */
+:root {
+  color-scheme: dark;
+  --bg: #050607;
+  --panel: #0b0d0f;
+  --line: #1c2126;
+  --fg: #eceff1;
+  --dim: #7d8890;
+  --faint: #3a434a;
+  --noob: #00ff00;  /* vert */
+  --geek: #ffff00;  /* jaune */
+  --elite: #ff2020; /* rouge */
+  --lvl: var(--fg); /* accent : blanc */
+  --ok: #00ff00;
+  --ko: #ff2020;
+  /* coloration syntaxique */
+  --sx-cmd: #ffff00;
+  --sx-flag: #00ff00;
+  --sx-str: #00ff00;
+  --sx-num: #ffff00;
+  --sx-op: #eceff1;
+  --sx-kw: #eceff1;
+  --sx-fn: #eceff1;
+  --sx-tag: #eceff1;
+  --sx-attr: #ffff00;
+  --sx-com: #6b757c;
+  --mono: "JetBrains Mono", "Fira Code", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  --display: "VT323", "JetBrains Mono", "DejaVu Sans Mono", monospace;
+  --size: 15px;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: var(--size);
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 24px 40px;
+  box-sizing: border-box;
+}
+*, *::before, *::after { box-sizing: inherit; font-size: inherit; }
+h1, h2, h3, p, pre { margin: 0; font-weight: inherit; }
+body::after { /* scanlines discrètes */
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 10;
+  background: repeating-linear-gradient(to bottom, rgba(255,255,255,.022) 0 1px, transparent 1px 3px);
+}
+/* l'écran dans l'écran : un cadre blanc autour de toute l'interface */
+.wrap {
+  max-width: 58rem; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;
+  border: 1px solid var(--fg); padding: 28px 32px 32px;
+  min-height: var(--frame-h, 0px); /* mesurée sur un écran de question Noob, appliquée à tous les écrans */
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 5px var(--faint);
+}
+@media (max-width: 480px) { .wrap { padding: 18px 14px 22px; } }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+:focus-visible { outline: 1px dashed var(--lvl); outline-offset: 3px; }
+::selection { background: var(--lvl); color: var(--bg); }
+em, i { font-style: italic; }
+b, strong { font-weight: 700; }
+
+/* ─── Accueil ─── */
+.boot { color: var(--dim); display: flex; flex-direction: column; min-height: 4.8em; }
+.boot .okk { color: var(--ok); }
+.titlebar { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.title { margin: 0; }
+.portal { color: var(--fg); opacity: .8; display: inline-flex; transition: opacity .15s, transform .15s; }
+.portal:hover { opacity: 1; transform: translateY(-2px); }
+.portal svg { display: block; }
+.portal.tomb { color: #fff; opacity: 1; filter: drop-shadow(0 0 6px rgba(255,255,255,.35)); }
+.portal.tomb:hover { filter: drop-shadow(0 0 10px rgba(255,255,255,.6)); }
+.title button {
+  font-family: var(--display); font-size: clamp(44px, 12vw, 64px); line-height: 1; font-weight: 400;
+  color: var(--lvl); white-space: nowrap; min-height: 1em; text-align: left;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--lvl) 40%, transparent);
+}
+.title .tn { color: var(--noob); text-shadow: 0 0 14px color-mix(in srgb, var(--noob) 70%, transparent); }
+.title .tg { color: var(--geek); text-shadow: 0 0 14px color-mix(in srgb, var(--geek) 70%, transparent); }
+.title .cursor { color: var(--fg); } /* curseur blanc sur le titre d'accueil uniquement */
+.title .te { color: var(--elite); text-shadow: 0 0 14px color-mix(in srgb, var(--elite) 70%, transparent); }
+.cursor { display: inline-block; color: var(--lvl); font-weight: 700; margin-left: .04em; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.tagline { color: var(--dim); }
+.tagline b { color: var(--fg); }
+
+/* le bloc de choix occupe tout le bas du cadre : ./start se cale dans le coin inférieur droit */
+.setup { display: flex; flex-direction: column; gap: 30px; margin-top: 24px; flex: 1; }
+/* dernière ligne : explication du chrono à gauche, ./start à droite */
+.lastrow { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.lastrow .desc { flex: 1; min-width: 0; }
+.lastrow .go { margin-top: 0; flex: none; }
+.group { display: flex; flex-direction: column; gap: 2px; }
+.row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.label { color: var(--fg); font-weight: 700; }
+.label::before { content: "$ "; color: var(--lvl); }
+.opts { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.opt { color: var(--dim); padding: 0 4px; }
+.opt::before { content: "["; }
+.opt::after { content: "]"; }
+.opt:hover { color: var(--fg); }
+.opt[aria-pressed="true"] { color: var(--bg); background: var(--c, var(--lvl)); font-weight: 700; }
+.opt[data-v="noob"] { --c: var(--noob); }
+.opt[data-v="geek"] { --c: var(--geek); }
+.opt[data-v="elite"] { --c: var(--elite); }
+.opt[data-v="pick"] { --c: var(--noob); }
+.opt[data-v="hint"] { --c: var(--geek); }
+.opt[data-v="raw"] { --c: var(--elite); }
+body[data-assist="pick"] { --lvl: var(--noob); }
+body[data-assist="hint"] { --lvl: var(--geek); }
+body[data-assist="raw"] { --lvl: var(--elite); }
+.desc { color: var(--dim); font-style: italic; font-size: .85em; min-height: 1.6em; } /* place réservée : rien ne bouge quand la description apparaît */
+@media (max-width: 940px) { .desc { min-height: 3.2em; } } /* sur écran étroit, place pour 2 lignes */
+.desc b { color: var(--lvl); font-weight: 700; }
+.go { align-self: flex-end; margin-top: auto; color: var(--lvl); font-weight: 800; }
+.go[aria-hidden="true"] { visibility: hidden; } /* place gardée : rien ne saute quand le bouton apparaît */
+.go::before { content: "> "; }
+.go:hover { text-decoration: underline; text-underline-offset: 4px; }
+.go[aria-disabled="true"] { color: var(--faint); }
+.go[aria-disabled="true"]:hover { text-decoration: none; }
+.missing { color: var(--dim); font-style: italic; font-size: .85em; }
+.best { color: var(--dim); }
+.best b { color: var(--fg); }
+
+/* ─── Partie ─── */
+.hud { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 4px 16px; color: var(--dim); }
+.hud .brand { color: var(--lvl); font-weight: 800; }
+.hud-r { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.hud-line { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 16px; }
+.best-var { color: var(--dim); }
+.best-var b { color: var(--fg); }
+.clock b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.clock.low, .clock.low b { color: var(--ko); }
+.clock.low b { animation: blink 1s steps(1) infinite; }
+.brand:hover { text-decoration: underline; text-underline-offset: 4px; }
+.badge { color: var(--lvl); font-weight: 800; }
+.badge::before { content: "["; color: var(--faint); }
+.badge.as { color: var(--lvl); }
+.badge::after { content: "]"; color: var(--faint); }
+.hud .sc b { color: var(--fg); }
+.bar { letter-spacing: .1em; color: var(--faint); overflow: hidden; white-space: nowrap; }
+.bar .on { color: var(--lvl); }
+.bar .ok { color: var(--ok); }
+.bar .ko { color: var(--ko); }
+
+.qblock { display: flex; flex-direction: column; gap: 2px; }
+.q-text { font-weight: 800; text-wrap: balance; }
+.q-text::before { content: "> "; color: var(--lvl); }
+.hint { color: var(--geek); font-style: italic; }
+.hint::before { content: "// indice : "; color: color-mix(in srgb, var(--geek) 55%, var(--bg)); }
+
+/* zone entre la question et le terminal : même hauteur à tous les niveaux,
+   pour que le terminal tombe au même endroit. Noob : propositions à gauche, correction à droite. */
+.zone { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 14px 32px; min-height: 9.6em; }
+.zone.split { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); }
+@media (max-width: 640px) { .zone.split { grid-template-columns: minmax(0, 1fr); } }
+.fbcol { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fbcol:empty { display: none; }
+.choices { display: flex; flex-direction: column; gap: 2px; }
+.choices .cap { color: var(--sx-com); font-style: italic; }
+.choice { display: flex; gap: 12px; align-items: baseline; padding: 2px 0; }
+.choice .k { color: var(--faint); font-weight: 700; }
+.choice code { min-width: 0; overflow-wrap: anywhere; }
+.choice.right .k { color: var(--ok); }
+.choice.right::after { content: "← bonne réponse"; color: var(--ok); font-style: italic; }
+.choice.wrong .k { color: var(--ko); }
+.choice.wrong::after { content: "← ta réponse"; color: var(--ko); font-style: italic; }
+
+.term {
+  border: 1px solid color-mix(in srgb, var(--lvl) 45%, var(--line));
+  background: #0d1012; border-radius: 6px; overflow: hidden;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lvl) 6%, transparent), 0 10px 30px rgba(0,0,0,.5);
+  transition: border-color .2s, box-shadow .2s;
+}
+.term:focus-within {
+  border-color: var(--lvl);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lvl) 12%, transparent), 0 0 28px color-mix(in srgb, var(--lvl) 18%, transparent);
+}
+.term-head {
+  display: flex; gap: 6px; align-items: center; padding: 6px 12px;
+  background: color-mix(in srgb, var(--lvl) 9%, #0d1012);
+  border-bottom: 1px solid color-mix(in srgb, var(--lvl) 30%, var(--line)); color: var(--dim);
+}
+.term-head i { width: 10px; height: 10px; border-radius: 50%; background: var(--faint); }
+.term-head i:first-child { background: var(--ko); }
+.term-head i:nth-child(2) { background: var(--geek); }
+.term-head i:nth-child(3) { background: var(--ok); }
+.term-head span { margin-left: 8px; color: var(--fg); font-weight: 700; }
+.cmdline { display: flex; align-items: baseline; gap: 10px; padding: 16px 16px 12px; }
+.prompt { color: var(--lvl); font-weight: 700; white-space: nowrap; }
+.field { position: relative; flex: 1; min-width: 0; }
+.field input, .field .mirror {
+  font: inherit; line-height: 1.6; letter-spacing: 0;
+  margin: 0; padding: 0; border: 0; width: 100%; white-space: pre;
+}
+.field input {
+  position: relative; z-index: 1; background: transparent; color: transparent;
+  caret-color: var(--lvl); outline: none;
+}
+.field input::placeholder { color: var(--faint); font-style: italic; }
+.field .mirror { position: absolute; inset: 0; overflow: hidden; color: var(--fg); pointer-events: none; }
+.term-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding: 0 14px 8px; color: var(--faint); font-style: italic; }
+.term-foot button { color: var(--dim); font-style: normal; }
+.term-foot button:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; }
+
+.fb { border-left: 2px solid var(--ok); padding: 2px 0 2px 14px; display: flex; flex-direction: column; gap: 4px; }
+.fb.ko { border-color: var(--ko); }
+.fb .verdict { font-weight: 800; color: var(--ok); }
+.fb.ko .verdict { color: var(--ko); }
+.fb .expl { color: #c3cbd1; }
+.next { align-self: flex-start; color: var(--lvl); font-weight: 700; }
+.next:hover { text-decoration: underline; text-underline-offset: 4px; }
+.next span { color: var(--faint); font-weight: 400; }
+
+code { font-family: var(--mono); }
+.expl code, .expect code { background: #000; padding: 0 5px; border: 1px solid var(--line); }
+.t-cmd { color: var(--sx-cmd); font-weight: 700; }
+.t-flag { color: var(--sx-flag); }
+.t-str { color: var(--sx-str); }
+.t-num { color: var(--sx-num); }
+.t-op { color: var(--sx-op); font-weight: 700; }
+.t-kw { color: var(--sx-kw); font-weight: 800; }
+.t-fn { color: var(--sx-fn); }
+.t-tag { color: var(--sx-tag); }
+.t-attr { color: var(--sx-attr); }
+.t-com { color: var(--sx-com); font-style: italic; }
+.t-punct { color: var(--dim); }
+
+/* ─── Fin ─── */
+.final { display: flex; flex-direction: column; gap: 4px; }
+.final .big { color: var(--dim); font-variant-numeric: tabular-nums; }
+.final .big b { color: var(--lvl); font-weight: 800; }
+.rank { font-weight: 800; letter-spacing: .06em; color: var(--fg); }
+.rank.root { color: var(--ok); }
+.final .sub { color: var(--dim); font-style: italic; }
+.final .sub b { color: var(--fg); font-style: normal; }
+.errors { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+.errors h3 { color: var(--sx-com); font-style: italic; margin: 14px 0 6px; }
+.err { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.err .eq { font-weight: 700; }
+.err .ey { color: var(--ko); overflow-wrap: anywhere; }
+.err .ea { overflow-wrap: anywhere; }
+.err .ea::before { content: "✔ "; color: var(--ok); }
+.actions { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.actions button { color: var(--dim); }
+.actions button::before { content: "> "; color: var(--faint); }
+.actions button:hover { color: var(--fg); text-decoration: underline; text-underline-offset: 4px; }
+.actions button.main { color: var(--lvl); font-weight: 800; }
+.actions button.main::before { color: var(--lvl); }
+
+.credit { text-align: center; color: var(--dim); margin-top: 14px; letter-spacing: .04em; font-size: .8em; }
+.foot { color: var(--faint); font-style: italic; border-top: 1px solid var(--line); padding-top: 12px; }
+
+.flash-ok { animation: fok .5s ease-out; }
+.flash-ko { animation: fko .4s ease-out; }
+@keyframes fok { from { box-shadow: 0 0 0 1px var(--ok), 0 0 20px var(--ok); } to { box-shadow: none; } }
+@keyframes fko { 0%,100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor { animation: none; }
+  .flash-ok, .flash-ko { animation: none; }
+}
+@media (max-width: 480px) {
+  :root { --size: 13px; }
+  .cmdline { flex-direction: column; gap: 2px; }
+  .field { width: 100%; }
+  .field input, .field .mirror { font-size: 16px; } /* évite le zoom auto sur iPhone */
+}
+</style>
+
+<div class="wrap" id="app"></div>
+<footer class="credit">© Auraponymous 2026</footer>
+
+<script src="data_old.js"></script>
+<script>
+(() => {
+"use strict";
+const Q = window.OTR_QUESTIONS || [];
+const app = document.getElementById("app");
+const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+
+const LANGS = { // ordre chronologique : Fortran 1957, COBOL 1959, BASIC 1964, Pascal 1970, MS-DOS 1981
+  fortran: { name: "Fortran", file: "PROGRAMME.F90", prompt: () => "FORTRAN ▸",
+             desc: "<b>Le doyen du calcul scientifique</b> : né en 1957, il fait encore tourner la météo et la physique." },
+  cobol:   { name: "COBOL",   file: "PROGRAMME.CBL", prompt: () => "COBOL ▸",
+             desc: "<b>Le langage des banques depuis 1959</b> : verbeux, presque de l'anglais, et toujours en service." },
+  basic:   { name: "BASIC",   file: "GWBASIC.EXE", prompt: () => "READY.",
+             desc: "<b>Le langage des premiers micro-ordinateurs</b> : des lignes numérotées, des GOTO et beaucoup de PRINT." },
+  pascal:  { name: "Pascal",  file: "PROGRAMME.PAS", prompt: () => "PASCAL ▸",
+             desc: "<b>Le langage des cours d'informatique</b> : rigoureux, structuré, ancêtre de Delphi." },
+  msdos:   { name: "MS-DOS",  file: "COMMAND.COM", prompt: () => "C:\\>",
+             desc: "<b>Le terminal des PC d'avant Windows</b> : disquettes, C:\\> et fichiers .BAT." }
+};
+const COUNT_DESC = {
+  5: "<b>Échauffement</b> : deux minutes pour tester.",
+  10: "<b>La partie standard</b> : de quoi voir où tu en es.",
+  15: "<b>Entraînement sérieux</b> : la difficulté monte vraiment.",
+  20: "<b>Le marathon</b> : la difficulté grimpe jusqu'au bout."
+};
+const LEVELS = {}; // pas de choix de niveau : chaque partie mélange 50 % Noob, 25 % Geek, 25 % Elite
+const ASSISTS = {
+  pick: { name: "PICK", desc: "<b>3 propositions</b>, tu tapes la bonne." },
+  hint: { name: "HINT", desc: "<b>Un indice</b> pour te mettre sur la piste." },
+  raw:  { name: "RAW",  desc: "<b>Saisie brute</b>, comme dans un vrai terminal." }
+};
+const COUNTS = [5, 10, 15, 20];
+const MODES = {
+  chill:   { name: "CHILL" },
+  serious: { name: "SERIOUS" },
+  killer:  { name: "KILLER" }
+};
+const PER_Q = 25; // secondes par question en mode Killer
+const fmt = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`; };
+function modeDesc() {
+  if (state.mode === "chill") return "<b>Pas de chrono</b> : prends tout ton temps.";
+  if (state.mode === "serious") return "<b>Un chrono</b> pour suivre ton temps, en pause pendant les corrections.";
+  if (state.mode === "killer") {
+    const tail = state.count
+      ? `${state.count} × ${PER_Q} s = <b>${fmt(state.count * PER_Q * 1000)}</b>.`
+      : `${PER_Q} s par question.`;
+    return `<b>Compte à rebours</b> : à zéro, la partie s'arrête. ${tail}`;
+  }
+  return "";
+}
+
+// aucun choix présélectionné : l'accueil démarre en vert (couleur Noob) jusqu'au choix du niveau
+const state = { lang: null, level: null, assist: null, count: null, mode: null, elapsed: 0, runStart: null, timedOut: false, isRetry: false, list: [], i: 0, score: 0, results: [], phase: "", booted: false, choices: [], tried: false };
+
+// ─── stockage local (meilleurs scores) ───
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem("otr:" + k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem("otr:" + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+// ─── utilitaires ───
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const $ = s => app.querySelector(s);
+// pierre tombale, lien vers OldToRoot
+const TERM = `<svg viewBox="0 0 40 32" width="42" height="34" aria-hidden="true"><rect x="2" y="3" width="36" height="26" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 12l5 4-5 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 21h9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const TOMB_UNUSED = `<svg viewBox="0 0 17 19" width="51" height="57" shape-rendering="crispEdges" aria-hidden="true"><path d="M6 0h1v1h-1zM7 0h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM10 0h1v1h-1zM4 1h1v1h-1zM5 1h1v1h-1zM11 1h1v1h-1zM12 1h1v1h-1zM3 2h1v1h-1zM13 2h1v1h-1zM2 3h1v1h-1zM14 3h1v1h-1zM1 4h1v1h-1zM15 4h1v1h-1zM1 5h1v1h-1zM15 5h1v1h-1zM1 6h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1zM9 6h1v1h-1zM11 6h1v1h-1zM12 6h1v1h-1zM13 6h1v1h-1zM15 6h1v1h-1zM1 7h1v1h-1zM3 7h1v1h-1zM5 7h1v1h-1zM8 7h1v1h-1zM11 7h1v1h-1zM13 7h1v1h-1zM15 7h1v1h-1zM1 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM8 8h1v1h-1zM11 8h1v1h-1zM12 8h1v1h-1zM13 8h1v1h-1zM15 8h1v1h-1zM1 9h1v1h-1zM3 9h1v1h-1zM5 9h1v1h-1zM8 9h1v1h-1zM11 9h1v1h-1zM15 9h1v1h-1zM1 10h1v1h-1zM3 10h1v1h-1zM5 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM11 10h1v1h-1zM15 10h1v1h-1zM1 11h1v1h-1zM15 11h1v1h-1zM1 12h1v1h-1zM11 12h1v1h-1zM15 12h1v1h-1zM1 13h1v1h-1zM10 13h1v1h-1zM15 13h1v1h-1zM1 14h1v1h-1zM11 14h1v1h-1zM15 14h1v1h-1zM1 15h1v1h-1zM10 15h1v1h-1zM15 15h1v1h-1zM1 16h1v1h-1zM15 16h1v1h-1zM0 17h1v1h-1zM1 17h1v1h-1zM2 17h1v1h-1zM3 17h1v1h-1zM4 17h1v1h-1zM5 17h1v1h-1zM6 17h1v1h-1zM7 17h1v1h-1zM8 17h1v1h-1zM9 17h1v1h-1zM10 17h1v1h-1zM11 17h1v1h-1zM12 17h1v1h-1zM13 17h1v1h-1zM14 17h1v1h-1zM15 17h1v1h-1zM16 17h1v1h-1zM0 18h1v1h-1zM2 18h1v1h-1zM4 18h1v1h-1zM6 18h1v1h-1zM8 18h1v1h-1zM10 18h1v1h-1zM12 18h1v1h-1zM14 18h1v1h-1zM16 18h1v1h-1z" fill="currentColor"/></svg>`;
+const cap = s => s.charAt(0) + s.slice(1).toLowerCase();
+const mainAnswer = q => q.a.find(a => !a.startsWith("re:"));
+
+// ─── coloration syntaxique (une seule fonction pour les cinq langages) ───
+const KW = {
+  basic: "PRINT INPUT LET IF THEN GOTO GO TO GOSUB RETURN FOR STEP NEXT END REM DATA READ RESTORE DIM ON RUN LIST NEW CLS SAVE LOAD POKE PEEK AND OR NOT STOP",
+  cobol: "DISPLAY ACCEPT MOVE TO ADD SUBTRACT FROM MULTIPLY BY DIVIDE INTO GIVING COMPUTE IF THEN ELSE END-IF PERFORM TIMES UNTIL VARYING STOP RUN DIVISION SECTION PIC PICTURE VALUE VALUES ARE THRU THROUGH EVALUATE WHEN OTHER END-EVALUATE OPEN CLOSE READ WRITE INPUT OUTPUT IDENTIFICATION ENVIRONMENT DATA PROCEDURE WORKING-STORAGE PROGRAM-ID SPACES SPACE ZERO ZEROS ZEROES GREATER LESS THAN IS NOT AND OR AT NEXT RECORD",
+  pascal: "PROGRAM VAR BEGIN END CONST TYPE INTEGER REAL STRING BOOLEAN CHAR ARRAY OF RECORD FOR TO DOWNTO DO WHILE REPEAT UNTIL IF THEN ELSE CASE PROCEDURE FUNCTION USES DIV MOD AND OR NOT IN TRUE FALSE NIL",
+  fortran: "PROGRAM END IMPLICIT NONE INTEGER REAL CHARACTER LOGICAL PARAMETER DIMENSION ALLOCATABLE INTENT IN OUT INOUT DO WHILE IF THEN ELSE ENDIF ENDDO PRINT READ WRITE CALL SUBROUTINE FUNCTION USE STOP EXIT CYCLE ALLOCATE DEALLOCATE TRUE FALSE AND OR NOT EQ NE GT LT GE LE LEN",
+  msdos: ""
+};
+for (const k in KW) KW[k] = new Set(KW[k].split(" "));
+const COMMENT = { basic: "REM\\b.*|'.*", cobol: "\\*>.*", fortran: "!.*", pascal: "\\{[^}]*\\}?|\\(\\*[\\s\\S]*?(?:\\*\\)|$)", msdos: "(?!)" };
+const WORD = { cobol: "[A-Za-z][\\w-]*", msdos: "[^\\s|<>\"]+", basic: "[A-Za-z_]\\w*\\$?", pascal: "[A-Za-z_]\\w*", fortran: "[A-Za-z_]\\w*" };
+function hlOld(s, lang) {
+  const str = lang === "basic" || lang === "msdos" ? "\"[^\"]*\"?" : "'[^']*'?|\"[^\"]*\"?";
+  const re = new RegExp(`(${COMMENT[lang]})|(${str})|(\\s+)|(\\d+(?:\\.\\d+)?)(?![\\w$])|(${WORD[lang]})|(.)`, "gi");
+  let out = "", m, first = true;
+  while ((m = re.exec(s))) {
+    if (m[1]) out += `<span class="t-com">${esc(m[1])}</span>`;
+    else if (m[2]) out += `<span class="t-str">${esc(m[2])}</span>`;
+    else if (m[3]) out += m[3];
+    else if (m[4]) out += `<span class="t-num">${m[4]}</span>`;
+    else if (m[5]) {
+      const w = m[5];
+      if (lang === "msdos") {
+        if (first) { out += `<span class="t-cmd">${esc(w)}</span>`; first = false; }
+        else if (/^\/|^%.*%$/.test(w)) out += `<span class="t-flag">${esc(w)}</span>`;
+        else out += esc(w);
+      } else if (KW[lang].has(w.toUpperCase())) out += `<span class="t-kw">${esc(w)}</span>`;
+      else if (s[re.lastIndex] === "(") out += `<span class="t-fn">${esc(w)}</span>`;
+      else out += esc(w);
+    } else {
+      if (m[6] === "|") first = true;
+      out += /[=<>+\-*\/^|&]/.test(m[6]) || (m[6] === ":" && s[re.lastIndex] === "=") ? `<span class="t-op">${esc(m[6])}</span>` : `<span class="t-punct">${esc(m[6])}</span>`;
+    }
+  }
+  return out;
+}
+const hl = (s, lang) => (LANGS[lang] ? hlOld(s, lang) : esc(s));
+const code = (s, lang) => `<code>${hl(s, lang)}</code>`;
+const richText = (s, lang) => esc(s).replace(/`([^`]+)`/g, (_, c) => code(c.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&amp;/g, "&"), lang));
+
+// ─── vérification des réponses ───
+// Ces langages ignorent la casse : on met tout en majuscules, sauf le texte entre guillemets.
+// Les espaces autour de la ponctuation ne comptent pas.
+const PUNCT = {
+  basic: /\s*([()[\],;:=+\-*\/<>^])\s*/g,
+  msdos: /\s*([|<>=])\s*/g,
+  cobol: /\s*([().,:=+*\/<>])\s*/g,
+  pascal: /\s*([()[\],;:=+\-*\/<>^.])\s*/g,
+  fortran: /\s*([()[\],;:=+\-*\/<>.%])\s*/g
+};
+function normalize(s, lang) {
+  s = String(s).replace(/[‘’“”«»]/g, '"').replace(/'/g, '"').replace(/\s+/g, " ").trim();
+  s = s.split(/("[^"]*"?)/).map((part, i) => i % 2 ? part : part.toUpperCase().replace(PUNCT[lang] || /$^/, "$1")).join("").trim();
+  if (lang === "msdos") s = s.replace(/\s+\//g, "/").replace(/^(CD|CHDIR) (\.\.|\\)/, "$1$2");
+  if (lang === "pascal") s = s.replace(/;$/, "");
+  if (lang === "cobol") s = s.replace(/\.$/, "");
+  return s;
+}
+function isCorrect(input, q) {
+  const n = normalize(input, q.lang);
+  if (!n) return false;
+  return q.a.some(a => {
+    if (a.startsWith("re:")) { try { return new RegExp(a.slice(3), "i").test(n); } catch (e) { return false; } }
+    return normalize(a, q.lang) === n;
+  });
+}
+window.OTR_check = isCorrect; // pratique pour tester dans la console
+
+// ─── tirage des questions ───
+// Pas de niveau à choisir : 50 % de questions faciles, 25 % de moyennes, 25 % de difficiles,
+// toujours de la plus facile à la plus difficile. S'il en manque dans une difficulté, on complète avec les autres.
+function pick(lang, count) {
+  const pool = Q.filter(q => q.lang === lang);
+  const by = k => shuffle(pool.filter(q => q.d === k));
+  const n3 = Math.round(count * 0.25), n2 = Math.round(count * 0.25), n1 = count - n2 - n3;
+  let chosen = by(1).slice(0, n1).concat(by(2).slice(0, n2), by(3).slice(0, n3));
+  for (const k of [1, 2, 3]) {
+    if (chosen.length >= count) break;
+    chosen = chosen.concat(by(k).filter(q => !chosen.includes(q)).slice(0, count - chosen.length));
+  }
+  return shuffle(chosen).sort((a, b) => a.d - b.d);
+}
+
+// ─── écrans ───
+function setLevel(l) { state.level = l; document.body.dataset.level = l || "noob"; }
+const ready = () => state.lang && state.assist && state.count && state.mode;
+
+function screenHome() {
+  pauseClock();
+  setLevel(state.level);
+  document.body.dataset.assist = state.assist || "";
+  state.phase = "home";
+  app.innerHTML = `
+    <div class="titlebar">
+      <h1 class="title"><button id="title" type="button" aria-label="OldToRoot, revenir au début"></button></h1>
+      <a class="portal" href="index.html" title="Retour à NoobToRoot" aria-label="Revenir à NoobToRoot">${TERM}</a>
+    </div>
+    <p class="tagline">Les langages qui ont fait l'informatique : <b>Fortran</b>, <b>COBOL</b>, <b>BASIC</b>, <b>Pascal</b> et <b>MS-DOS</b>.</p>
+    <div class="setup">
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --langage</div>
+          <div class="opts" data-key="lang">${Object.entries(LANGS).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.lang}">${v.name}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${state.lang ? LANGS[state.lang].desc : ""}</div>
+      </div>
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --assist</div>
+          <div class="opts" data-key="assist">${Object.entries(ASSISTS).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.assist}">${cap(v.name)}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${state.assist ? ASSISTS[state.assist].desc : ""}</div>
+      </div>
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --questions</div>
+          <div class="opts" data-key="count">${COUNTS.map(n => `<button class="opt" data-v="${n}" aria-pressed="${n === state.count}">${n}</button>`).join("")}</div>
+        </div>
+        <div class="desc">${state.count ? COUNT_DESC[state.count] : ""}</div>
+      </div>
+      <div class="group">
+        <div class="row">
+          <div class="label">choisir --chrono</div>
+          <div class="opts" data-key="mode">${Object.entries(MODES).map(([k, v]) => `<button class="opt" data-v="${k}" aria-pressed="${k === state.mode}">${cap(v.name)}</button>`).join("")}</div>
+        </div>
+        <div class="lastrow">
+          <div class="desc">${modeDesc()}</div>
+          <button class="go" id="go" aria-hidden="${!ready()}" ${ready() ? "" : 'tabindex="-1"'}>./start</button>
+        </div>
+      </div>
+    </div>`;
+
+  app.querySelectorAll(".opts").forEach(g => g.addEventListener("click", e => {
+    const b = e.target.closest(".opt"); if (!b) return;
+    const key = g.dataset.key; const v = key === "count" ? +b.dataset.v : b.dataset.v;
+    state[key] = v;
+    state.booted = true;
+    screenHome();
+  }));
+  $("#go").addEventListener("click", () => { if (ready()) start(); else { state.tried = true; screenHome(); } });
+  $("#title").addEventListener("click", goHome);
+  typeTitle();
+}
+
+// retour à l'accueil depuis n'importe quel écran, avec l'animation du titre
+function goHome() { Object.assign(state, { booted: false, tried: false, lang: null, assist: null, count: null, mode: null }); screenHome(); }
+
+// titre tapé lettre par lettre, façon machine à écrire
+const TITLE = [["Old", "tn"], ["To", "tg"], ["Root", "te"]];
+function titleFrame(n) {
+  let html = "", k = 0;
+  TITLE.forEach(([w, c]) => {
+    const vis = w.slice(0, Math.max(0, Math.min(w.length, n - k)));
+    if (vis) html += `<span class="${c}">${vis}</span>`;
+    k += w.length;
+  });
+  return html + `<span class="cursor" aria-hidden="true">_</span>`;
+}
+const TITLE_LEN = TITLE.reduce((s, [w]) => s + w.length, 0);
+
+let titleTimer = 0;
+function typeTitle() {
+  const t = $("#title");
+  clearTimeout(titleTimer);
+  if (state.booted || reduceMotion) { t.innerHTML = titleFrame(TITLE_LEN); return; }
+  state.booted = true;
+  t.innerHTML = titleFrame(0);
+  let n = 0;
+  const tick = () => {
+    if (!t.isConnected) return;
+    t.innerHTML = titleFrame(++n);
+    if (n < TITLE_LEN) titleTimer = setTimeout(tick, 95 + Math.random() * 70);
+  };
+  titleTimer = setTimeout(tick, 300);
+}
+
+function start(list) {
+  state.isRetry = Array.isArray(list);
+  state.list = state.isRetry ? list : pick(state.lang, state.count);
+  state.i = 0; state.score = 0; state.results = [];
+  state.elapsed = 0; state.runStart = null; state.timedOut = false;
+  if (!state.list.length) { screenHome(); return; } // aucune question disponible : on reste à l'accueil
+  screenQuestion();
+}
+
+// ─── chrono ───
+// Serious : chrono qui monte. Killer : compte à rebours global (PER_Q × nb de questions).
+// Dans les deux cas, le temps ne court que pendant la saisie, pas pendant la correction.
+let clock = 0;
+const timed = () => state.mode === "serious" || state.mode === "killer";
+const liveElapsed = () => state.elapsed + (state.runStart !== null ? performance.now() - state.runStart : 0);
+const budget = () => state.list.length * PER_Q * 1000;
+function clockHTML() {
+  if (!timed()) return "";
+  return `<span class="clock" id="clock">${state.mode === "killer" ? "countdown" : "time"} <b>--:--</b></span>`;
+}
+function tickClock() {
+  if (!app.isConnected) { clearInterval(clock); return; } // page remplacée : ce chrono n'a plus d'écran
+  const el = app.querySelector("#clock");
+  if (!el) return;
+  if (state.mode === "serious") { el.querySelector("b").textContent = fmt(liveElapsed()); return; }
+  const rem = budget() - liveElapsed();
+  el.querySelector("b").textContent = fmt(Math.ceil(rem / 1000) * 1000);
+  el.classList.toggle("low", rem < 10000);
+  if (rem <= 0) timeUp();
+}
+function startClock() {
+  clearInterval(clock);
+  if (!timed()) return;
+  state.runStart = performance.now();
+  clock = setInterval(tickClock, 200);
+  tickClock();
+}
+function pauseClock() {
+  clearInterval(clock);
+  if (state.runStart !== null) { state.elapsed += performance.now() - state.runStart; state.runStart = null; }
+}
+
+// meilleurs scores du langage + niveau en cours, affichés comme des variables Python
+const recKey = () => `${state.lang}:${state.assist}`;
+const timeKey = () => `time:${recKey()}:${state.list.length}`;
+function bestVar() {
+  const b = store.get(`best:${recKey()}`);
+  let html = `best_score = <b>${b ? `${b.score}/${b.total}` : "None"}</b>`;
+  if (timed()) {
+    const t = store.get(timeKey());
+    html += ` · best_time = <b>${t ? fmt(t) : "None"}</b>`;
+  }
+  return `<div class="best-var" title="best_time : ton meilleur temps sur un sans-faute, pour ce langage, ce niveau et ce nombre de questions">${html}</div>`;
+}
+
+// Hauteur du cadre : on mesure un écran de question Noob type (3 propositions, avant correction)
+// dans un cadre invisible, et cette hauteur devient le minimum de tous les écrans.
+function measureFrame() {
+  const probe = document.createElement("div");
+  probe.className = "wrap";
+  probe.setAttribute("aria-hidden", "true");
+  probe.style.cssText = "position:absolute;left:0;right:0;top:0;visibility:hidden;pointer-events:none;min-height:0";
+  probe.innerHTML = `
+    <div class="hud"><button class="brand">OldToRoot_</button><div class="hud-r"><div class="hud-line"><span>MS-DOS</span><span class="badge">PICK</span><span>Q 01/10</span><span class="sc">score <b>0</b></span><span>countdown <b>00:00</b></span></div><div class="best-var">best_score = <b>None</b> · best_time = <b>None</b></div></div></div>
+    <div class="bar">░░░░░░░░░░</div>
+    <div class="qblock"><p class="q-text">Afficher la liste des fichiers du dossier courant</p></div>
+    <div class="zone split"><div class="choices"><div class="choice"><span class="k">[1]</span><code>ls</code></div><div class="choice"><span class="k">[2]</span><code>cd</code></div><div class="choice"><span class="k">[3]</span><code>pwd</code></div></div></div>
+    <div class="term"><div class="term-head"><i></i><i></i><i></i><span>PROGRAMME.F90</span></div><div class="cmdline"><span class="prompt">FORTRAN ▸</span><div class="field"><input></div></div><div class="term-foot"><span>Entrée pour valider</span><button>passer ▸</button></div></div>`;
+  document.body.appendChild(probe);
+  const h = probe.offsetHeight;
+  probe.remove();
+  document.documentElement.style.setProperty("--frame-h", h + "px");
+}
+measureFrame();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureFrame);
+let resizeT = 0;
+window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(measureFrame, 150); });
+
+function barHTML() {
+  return state.list.map((_, k) => {
+    const r = state.results[k];
+    if (r) return `<span class="${r.ok ? "ok" : "ko"}">█</span>`;
+    return k === state.i ? `<span class="on">▓</span>` : "░";
+  }).join("");
+}
+
+function screenQuestion() {
+  if (!state.list[state.i]) { screenHome(); return; } // garde-fou : jamais de question fantôme
+  const q = state.list[state.i], L = LANGS[q.lang], lvl = state.level;
+  state.phase = "type";
+  const as = state.assist;
+  state.choices = as === "pick" ? shuffle([{ v: mainAnswer(q), ok: true }, ...q.x.map(v => ({ v, ok: false }))]) : [];
+  const pad = n => String(n).padStart(2, "0");
+  app.innerHTML = `
+    <div class="hud">
+      <button class="brand" type="button" title="Revenir au début">OldToRoot<span class="cursor" aria-hidden="true">_</span></button>
+      <div class="hud-r">
+        <div class="hud-line">
+          <span>${L.name}</span>
+          <span class="badge as">${ASSISTS[as].name}</span>
+          <span>Q ${pad(state.i + 1)}/${pad(state.list.length)}</span>
+          <span class="sc">score <b>${state.score}</b></span>
+          ${clockHTML()}
+        </div>
+        ${bestVar()}
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true">${barHTML()}</div>
+    <div class="qblock">
+      <p class="q-text">${esc(q.q)}</p>
+      ${as === "hint" ? `<div class="hint">${esc(q.h)}</div>` : ""}
+    </div>
+    <div class="zone ${as === "pick" ? "split" : ""}">
+      ${as === "pick" ? `<div class="choices">${state.choices.map((c, k) => `<div class="choice" data-k="${k}"><span class="k">[${k + 1}]</span>${code(c.v, q.lang)}</div>`).join("")}</div>` : ""}
+      <div id="fb" class="fbcol" aria-live="polite"></div>
+    </div>
+    <div class="term" id="term">
+      <div class="term-head"><i></i><i></i><i></i><span>${esc(L.file)}</span></div>
+      <div class="cmdline">
+        <span class="prompt">${esc(L.prompt(lvl))}</span>
+        <div class="field">
+          <pre class="mirror" id="mirror" aria-hidden="true"></pre>
+          <input id="cmd" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Ta réponse">
+        </div>
+      </div>
+      <div class="term-foot"><span>Entrée pour valider</span><button id="skip" type="button">passer ▸</button></div>
+    </div>`;
+
+  $(".brand").addEventListener("click", goHome);
+  // sur téléphone (sans touche Entrée une fois le clavier fermé) : toucher la zone ou le terminal fait avancer
+  [".zone", "#term"].forEach(s => $(s).addEventListener("click", e => { if (state.phase === "done" && !e.target.closest("button")) next(); }));
+  const inp = $("#cmd"), mir = $("#mirror");
+  const sync = () => { mir.innerHTML = hl(inp.value, q.lang) + " "; mir.scrollLeft = inp.scrollLeft; };
+  ["input", "scroll", "keyup", "click"].forEach(ev => inp.addEventListener(ev, sync));
+  // stopPropagation : sinon la même touche Entrée ferait aussi passer à la question suivante
+  inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); submit(); } });
+  $("#skip").addEventListener("click", () => finishQuestion(false, "", true));
+  inp.placeholder = as === "raw" ? "" : "tape ta réponse";
+  inp.focus();
+  sync();
+  startClock();
+}
+
+// Killer : le compte à rebours atteint zéro
+function timeUp() {
+  if (state.phase !== "type") return;
+  pauseClock();
+  state.phase = "done";
+  state.timedOut = true;
+  const q = state.list[state.i];
+  for (let k = state.i; k < state.list.length; k++) state.results[k] = { q: state.list[k], ok: false, given: "", timeout: true };
+  state.i = state.list.length - 1; // la suite mène directement au score
+  $("#cmd").disabled = true;
+  $("#skip").hidden = true;
+  state.choices.forEach((c, k) => { if (c.ok) app.querySelector(`.choice[data-k="${k}"]`).classList.add("right"); });
+  $("#term").classList.add("flash-ko");
+  app.querySelector(".bar").innerHTML = barHTML();
+  $("#fb").innerHTML = `
+    <div class="fb ko">
+      <span class="verdict">✘ Connexion perdue : temps écoulé.</span>
+      <span class="expect">Réponse attendue : ${code(mainAnswer(q), q.lang)}</span>
+      <span class="expl">Les questions restantes comptent comme ratées.</span>
+    </div>`;
+}
+
+function submit() {
+  if (state.phase !== "type") return;
+  const q = state.list[state.i], val = $("#cmd").value;
+  if (!val.trim()) return;
+  finishQuestion(isCorrect(val, q), val);
+}
+
+function finishQuestion(ok, given, skipped) {
+  if (state.phase !== "type") return;
+  pauseClock();
+  state.phase = "done";
+  tickClock();
+  const q = state.list[state.i];
+  if (ok) state.score++;
+  state.results[state.i] = { q, ok, given: skipped ? "" : given };
+  $("#cmd").disabled = true;
+  $("#skip").hidden = true;
+  // en mode Noob, on révèle la bonne proposition (et celle tapée si c'est un leurre)
+  state.choices.forEach((c, k) => {
+    const el = app.querySelector(`.choice[data-k="${k}"]`);
+    if (c.ok) el.classList.add("right");
+    else if (!ok && given && normalize(given, q.lang) === normalize(c.v, q.lang)) el.classList.add("wrong");
+  });
+  $("#term").classList.add(ok ? "flash-ok" : "flash-ko");
+  app.querySelector(".sc b").textContent = state.score;
+  app.querySelector(".bar").innerHTML = barHTML();
+  const last = state.i === state.list.length - 1;
+  // l'explication n'apparaît qu'en cas d'erreur ; pas de bouton : Entrée doit devenir un réflexe
+  const showNext = false;
+  $("#fb").innerHTML = `
+    <div class="fb ${ok ? "" : "ko"}">
+      <span class="verdict">${ok ? "✔ Accès accordé. +1" : skipped ? "↷ Question passée." : "✘ Accès refusé."}</span>
+      ${ok ? "" : `<span class="expect">Réponse attendue : ${code(mainAnswer(q), q.lang)}</span>
+      <span class="expl">${richText(q.e, q.lang)}</span>`}
+    </div>
+    ${showNext ? `<button class="next" id="next">${last ? "voir mon score" : "question suivante"} ▸ <span>[Entrée]</span></button>` : ""}`;
+  const nx = $("#next");
+  if (nx) { nx.addEventListener("click", next); setTimeout(() => nx.focus(), 30); }
+}
+
+function next() {
+  if (state.phase !== "done" || !app.isConnected) return;
+  state.i++;
+  if (state.i >= state.list.length) screenEnd(); else screenQuestion();
+}
+
+function rankOf(p) {
+  if (p === 1) return ["ACCÈS ROOT OBTENU", "root"];
+  if (p >= .7) return ["PRIVILÈGES ÉLEVÉS", ""];
+  if (p >= .4) return ["UTILISATEUR STANDARD", ""];
+  return ["ACCÈS REFUSÉ · RETENTE TA CHANCE", ""];
+}
+
+function screenEnd() {
+  state.phase = "end";
+  pauseClock();
+  const total = state.list.length, p = total ? state.score / total : 0;
+  const key = `best:${recKey()}`, prev = store.get(key);
+  // une révision des erreurs ne compte pas pour les records
+  const record = !state.isRetry && (!prev || p > prev.score / prev.total);
+  if (record) store.set(key, { score: state.score, total });
+  // best_time : seulement sur un sans-faute complet, en Serious ou Killer
+  const tPrev = timed() ? store.get(timeKey()) : null;
+  const timeRecord = timed() && !state.isRetry && !state.timedOut && state.score === total && (!tPrev || state.elapsed < tPrev);
+  if (timeRecord) store.set(timeKey(), Math.round(state.elapsed));
+  const timeLine = !timed() ? ""
+    : state.timedOut ? `<div class="sub">temps écoulé : <b>${fmt(budget())}</b> utilisées</div>`
+    : `<div class="sub">${state.mode === "killer" ? `temps utilisé : <b>${fmt(state.elapsed)}</b> sur <b>${fmt(budget())}</b>` : `temps : <b>${fmt(state.elapsed)}</b>`}${timeRecord && tPrev ? " · <b>nouveau best_time !</b>" : ""}</div>`;
+  const [rank, cls] = state.timedOut ? ["SESSION EXPIRÉE", ""] : rankOf(p);
+  const errs = state.results.filter(r => !r.ok);
+  const nextLvl = null; // pas de niveau supérieur dans OldToRoot
+  app.innerHTML = `
+    <div class="hud">
+      <button class="brand" type="button" title="Revenir au début">OldToRoot<span class="cursor" aria-hidden="true">_</span></button>
+      <div class="hud-r">
+        <div class="hud-line"><span>${LANGS[state.lang].name}</span><span class="badge as">${ASSISTS[state.assist].name}</span></div>
+        ${bestVar()}
+      </div>
+    </div>
+    <div class="bar" aria-hidden="true">${barHTML()}</div>
+    <div class="final">
+      <div class="big">score final : <b>${state.score}/${total}</b> · ${Math.round(p * 100)} %</div>
+      <div class="rank ${cls}">${rank}</div>
+      ${timeLine}
+      <div class="sub">${record && prev ? "<b>nouveau record !</b>" : ""}${!record && prev ? `record : <b>${prev.score}/${prev.total}</b>` : ""}</div>
+    </div>
+    <div class="actions">
+      <button class="main" id="again">rejouer</button>
+      ${errs.length ? `<button id="retry">revoir mes ${errs.length} erreur${errs.length > 1 ? "s" : ""}</button>` : ""}
+      <button id="menu">menu</button>
+    </div>
+    ${errs.length ? `<div class="errors"><h3>// à revoir</h3>${errs.map(r => `
+      <div class="err">
+        <span class="eq">${esc(r.q.q)}</span>
+        <span class="ey">${r.given ? `tu as tapé : ${code(r.given, r.q.lang)}` : r.timeout ? "temps écoulé" : "passée"}</span>
+        <span class="ea">${code(mainAnswer(r.q), r.q.lang)}</span>
+      </div>`).join("")}</div>` : ""}`;
+  $("#again").addEventListener("click", () => start());
+  $("#menu").addEventListener("click", screenHome);
+  $(".brand").addEventListener("click", goHome);
+  if (errs.length) $("#retry").addEventListener("click", () => start(shuffle(errs.map(r => r.q))));
+  if ($("#up")) $("#up").addEventListener("click", () => { setLevel(nextLvl); start(); });
+  $("#again").focus();
+}
+
+// ─── clavier global ───
+document.addEventListener("keydown", e => {
+  if (!app.isConnected) return; // une ancienne version de la page ne doit plus réagir au clavier
+  if (state.phase === "done" && e.key === "Enter" && e.target.id !== "next") { e.preventDefault(); next(); }
+  else if (state.phase === "home" && e.key === "Enter" && e.target === document.body && ready()) { e.preventDefault(); start(); }
+});
+
+screenHome();
+})();
+</script>
